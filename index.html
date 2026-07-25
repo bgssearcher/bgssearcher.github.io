@@ -272,15 +272,14 @@
       body .header-nav { gap: 10px; }
       body .header-nav a { font-size: 11px; padding: 4px 8px; border-radius: 4px; }
       body .main-content { padding: 0;  margin: 0; display: flex; flex-direction: column; flex: 1; min-height: 0; }
-      body .search-container { flex-direction: column; align-items: stretch; gap: 4px; margin: 6px 6px 4px 6px; padding: 0; }
-      body .search-container input[type="text"] { max-width: 100%; padding: 6px 8px; font-size: 13px; height: auto; }
-      body .filter-select-wrapper { width: 100% gap: 4px; }
+      body .search-container { flex-direction: row; align-items: center; gap: 6px; margin: 6px 6px 4px 6px; padding: 0; }
+      body .search-container input[type="text"] { flex: 1; max-width: none; padding: 8px; font-size: 14px; height: auto; }
+      body .filter-select-wrapper { width: 100%; gap: 4px; }
       body .filter-select-wrapper select { flex: 1; width: 50%; padding: 6px 4px; font-size: 12px; height: auto; }
       body .content-wrapper { display: flex; flex-direction: column-reverse; flex: 1; min-height: 0; gap: 4px; margin: 0 6px 6px 6px; width: auto; height: auto; max-height: none; }    
-      body #map { width: 100%; height: 35dvh; flex: none; margin: 0; }    
+      body #map { width: 100%; height: 45dvh; flex: none; margin: 0; }    
       body .list-container { width: 100%; min-width: 100%; max-width: 100%; height: auto; max-height: none; flex: 1; min-height: 0;  padding: 0; overflow-y: auto; }
-      body .search-container { flex-direction: column; align-items: stretch; gap: 8px; }
-      #advancedSearchBtn { width: 100%; }
+      #advancedSearchBtn { width: auto; padding: 6px 10px; flex-shrink: 0; }
       .modal-content { width: 95%; height: 85vh; }
       .checkbox-grid { grid-template-columns: repeat(3, 1fr); }
       input[type="text"],select { font-size: 16px !important; }
