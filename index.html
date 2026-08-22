@@ -83,7 +83,7 @@
     }
     .search-container input[type="text"] {
       flex: 1; padding: 10px; font-size: 16px; border-radius: 8px; box-sizing: border-box;
-      background: #ffffff; color: #333333; border: 1px solid #ccc;
+      background: #ffffff; color: #333333;
     }
     .search-container input[type="text"]:focus {
       border-color: #3498db; outline: none; background: #ffffff;
@@ -108,7 +108,6 @@
       display: flex; border-radius: 8px; overflow: hidden; 
       border: 1px solid #ddd; cursor: pointer; height: auto; 
       box-sizing: border-box; flex-shrink: 0; background: #ffffff;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
     }
     .card-img { width: 100px; height: 100px; object-fit: cover; background: #eee; flex-shrink: 0; }
     .card-info { padding: 10px; display: flex; flex-direction: column; justify-content: center; gap: 4px; flex-grow: 1; overflow: hidden; }
@@ -314,7 +313,7 @@
       <div id="sidebarWrapper" class="sidebar-wrapper">
         <div class="sidebar-main">
           <div class="search-container">
-            <input type="text" id="searchInput" placeholder="地名を入力…(ｶﾝﾏ,ｽﾍﾟｰｽ区切り可)" oninput="filterData()">
+            <input type="text" id="searchInput" placeholder="地名を入力…(複数入力可)" oninput="filterData()">
             <button id="advancedSearchBtn" onclick="openAdvancedSearch()">
               <span style="font-size: 15px; font-weight: bold;">詳細検索</span>
             </button>
