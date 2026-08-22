@@ -23,16 +23,19 @@
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <link rel="apple-touch-icon" href="favicon.png">
   <style>
-    body {
-      font-family: 'Helvetica Neue', Arial, sans-serif;
+    html, body {
+      width: 100%;
+      height: 100%;
       margin: 0;
       padding: 0;
-      background: #ffffff;
+      overflow: hidden;
+      background-color: #111111;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
       color: #333;
+    }
+    body {
       display: flex;
       flex-direction: column;
-      height: 100dvh;
-      overflow: hidden;
     }
     .main-content {
       padding: 0;
@@ -58,13 +61,12 @@
     .sidebar-wrapper {
       position: absolute;
       top: 0; left: 0; height: 100%;
-      width: 30%; /* 横幅3割 */
+      width: 30%;
       min-width: 320px;
       z-index: 10;
       display: flex;
       transform: translateX(0);
       transition: transform 0.3s ease;
-      box-shadow: 3px 0 10px rgba(0,0,0,0.6);
     }
     .sidebar-wrapper.closed {
       transform: translateX(-100%);
@@ -72,56 +74,58 @@
 
     .sidebar-main {
       flex: 1; display: flex; flex-direction: column;
-      background: #111111; height: 100%; overflow: hidden;
+      background: #ffffff; height: 100%; overflow: hidden;
     }
-    
+  
     .search-container {
-      margin: 0; padding: 12px; background: #111111;
+      margin: 0; padding: 12px; background: #ffffff; border-bottom: 1px solid #eee;
       display: flex; justify-content: flex-start; align-items: center; gap: 10px;
     }
     .search-container input[type="text"] {
       flex: 1; padding: 10px; font-size: 16px; border-radius: 8px; box-sizing: border-box;
-      background: #2a2a2a; color: #ffffff; border: 1px solid #444;
+      background: #f8f9fa; color: #333333; border: 1px solid #ccc;
     }
     .search-container input[type="text"]:focus {
-      border-color: #ff9f1c; outline: none;
+      border-color: #3498db; outline: none; background: #ffffff;
     }
     .search-container input[type="text"]::placeholder { color: #888; }
     
     #advancedSearchBtn {
-      background: #333; border: 1px solid #555; color: #fff;
+      background: #f1f3f5; border: 1px solid #ccc; color: #333;
       border-radius: 8px; padding: 10px; font-size: 16px;
       box-sizing: border-box; cursor: pointer; white-space: nowrap;
       transition: background 0.2s;
     }
-    #advancedSearchBtn:hover { background: #444; }
+    #advancedSearchBtn:hover { background: #e2e6ea; }
 
     .list-container {
       width: 100%; max-width: 100%; height: 100%;
       overflow-y: auto; -webkit-overflow-scrolling: touch;
       display: flex; flex-direction: column; gap: 10px;
-      background: #111111; padding: 0 12px 12px 12px; box-sizing: border-box;
+      background: #f5f7f9; padding: 12px; box-sizing: border-box;
     }
     .data-card { 
       display: flex; border-radius: 8px; overflow: hidden; 
-      border: 1px solid #333; cursor: pointer; height: auto; 
-      box-sizing: border-box; flex-shrink: 0; background: #1e1e1e; 
+      border: 1px solid #ddd; cursor: pointer; height: auto; 
+      box-sizing: border-box; flex-shrink: 0; background: #ffffff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
     }
-    .card-img { width: 100px; height: 100px; object-fit: cover; background: #333; flex-shrink: 0; }
+    .card-img { width: 100px; height: 100px; object-fit: cover; background: #eee; flex-shrink: 0; }
     .card-info { padding: 10px; display: flex; flex-direction: column; justify-content: center; gap: 4px; flex-grow: 1; overflow: hidden; }
     .data-card.active .card-info { justify-content: flex-start; }
-    .card-name { font-size: 14px; font-weight: bold; margin: 0; color: #ffffff; }
-    .card-address { font-size: 12px; margin: 0; color: #aaaaaa; }
-    .card-detail { font-size: 12px; margin: 4px 0 0 0; padding-top: 4px; display: none; padding-right: 5px; word-break: break-all; color: #cccccc; border-top: 1px dashed #444; }
+    .card-name { font-size: 14px; font-weight: bold; margin: 0; color: #333333; }
+    .card-address { font-size: 12px; margin: 0; color: #666666; }
+    .card-detail { font-size: 12px; margin: 4px 0 0 0; padding-top: 4px; display: none; padding-right: 5px; word-break: break-all; color: #555555; border-top: 1px dashed #ddd; }
     .data-card.active .card-detail { display: block; }
-    .no-data { text-align: center; padding: 40px; border-radius: 8px; font-size: 14px; width: 100%; box-sizing: border-box; background: #111111; color: #888888; }
-    .data-card.highlight { background: #3a2e1d; border: 1px solid #ff9f1c; }
+    .no-data { text-align: center; padding: 40px; border-radius: 8px; font-size: 14px; width: 100%; box-sizing: border-box; background: #ffffff; color: #666666; }
+    .data-card.highlight { background: #fff9e6; border: 1px solid #ff9f1c; }
 
     .sidebar-toggle {
       position: absolute; right: -24px; top: 50%; transform: translateY(-50%);
-      width: 24px; height: 70px; background: #111111; color: #ffffff;
+      width: 24px; height: 70px; background: #ffffff; color: #333333;
       display: flex; align-items: center; justify-content: center;
-      cursor: pointer; border-radius: 0 8px 8px 0; box-shadow: 3px 0 5px rgba(0,0,0,0.5);
+      cursor: pointer; border-radius: 0 8px 8px 0; box-shadow: 3px 0 5px rgba(0,0,0,0.15);
+      border: 1px solid #ddd; border-left: none;
       font-size: 12px;
     }
     
@@ -171,10 +175,10 @@
     .card-content span { font-size: 12px; font-weight: bold; color: #2c3e50; }
     /* チェックされた時の見た目 */
     .feature-card input[type="checkbox"]:checked + .card-content {
-      border-color: #3498db; background: #ebf5fb; color: #3498db; box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+      border-color: #3498db; background: #ebf5fb; color: #3498db;
     }
     .card-content.is-active {
-      border-color: #3498db; background: #ebf5fb; color: #3498db; box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+      border-color: #3498db; background: #ebf5fb; color: #3498db;
     }
     .modal-footer {
       padding: 15px 20px; border-top: 1px solid #ddd; background: #fff; flex-shrink: 0; text-align: right;
@@ -276,12 +280,14 @@
       body .content-wrapper { display: flex; flex-direction: column-reverse; flex: 1; min-height: 0; gap: 4px; margin: 0 6px 6px 6px; width: auto; height: auto; max-height: none; }
       body .list-container { width: 100%; min-width: 100%; max-width: 100%; height: auto; max-height: none; flex: 1; min-height: 0;  padding: 0; overflow-y: auto; }
       #map { width: 100%; height: 100dvh; }
-      .sidebar-wrapper { width: 100%; height: 50vh; min-width: auto; top: auto; bottom: 0; left: 0; flex-direction: column; border-radius: 20px 20px 0 0; transform: translateY(0); }
+      .sidebar-wrapper { width: 100%; height: 30vh; min-width: auto; top: auto; bottom: 0; left: 0; flex-direction: column; border-radius: 20px 20px 0 0; transform: translateY(0); }
       .sidebar-wrapper.closed { transform: translateY(100%); }
       .sidebar-toggle {
         top: -30px; right: auto; left: 50%; transform: translateX(-50%);
         width: 60px; height: 30px;
         border-radius: 10px 10px 0 0;
+        border: 1px solid #ddd;
+        border-bottom: none;
       }
       .sidebar-toggle #toggleIcon { display: inline-block; transform: rotate(90deg); }
       #advancedSearchBtn { width: auto; padding: 0 12px; height: 100%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; box-sizing: border-box; margin: 0; }
@@ -426,6 +432,9 @@
     let currentFilteredData = [];
     let currentDisplayCount = 0;
     const CHUNK_SIZE = 30;
+    
+    const defaultIcon = L.divIcon({ className: 'custom-square-marker', iconSize: [12, 12], iconAnchor: [6, 6] });
+    const selectedIcon = L.divIcon({ className: 'custom-square-marker selected', iconSize: [12, 12], iconAnchor: [6, 6] });
 
     function initMap() {
       map = L.map('map', { zooming: true, touchZoom: true, zoomControl: false }).setView([35.6812, 139.7671], 10);
