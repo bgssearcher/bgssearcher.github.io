@@ -71,14 +71,13 @@
     .sidebar-wrapper.closed {
       transform: translateX(-100%);
     }
-
     .sidebar-main {
       flex: 1; display: flex; flex-direction: column;
       background: #ffffff; height: 100%; overflow: hidden;
     }
   
     .search-container {
-      margin: 0; padding: 12px; background: #ffffff; border-bottom: 1px solid #eee;
+      margin: 0; padding: 12px; background: #ffffff;
       display: flex; justify-content: flex-start; align-items: center; gap: 10px;
     }
     .search-container input[type="text"] {
@@ -91,12 +90,12 @@
     .search-container input[type="text"]::placeholder { color: #888; }
     
     #advancedSearchBtn {
-      background: #f1f3f5; border: 1px solid #ccc; color: #333;
+      background: #ecf0f1; border: 2px solid #bdc3c7; color: #2c3e50;
       border-radius: 8px; padding: 10px; font-size: 16px;
       box-sizing: border-box; cursor: pointer; white-space: nowrap;
       transition: background 0.2s;
     }
-    #advancedSearchBtn:hover { background: #e2e6ea; }
+    #advancedSearchBtn:hover { background: #dfe6e9; }
 
     .list-container {
       width: 100%; max-width: 100%; height: 100%;
@@ -106,7 +105,7 @@
     }
     .data-card { 
       display: flex; border-radius: 8px; overflow: hidden; 
-      border: 1px solid #ddd; cursor: pointer; height: auto; 
+      border: 1px solid #eef2f5; cursor: pointer; height: auto; 
       box-sizing: border-box; flex-shrink: 0; background: #ffffff;
     }
     .card-img { width: 100px; height: 100px; object-fit: cover; background: #eee; flex-shrink: 0; }
@@ -682,7 +681,7 @@
 
         const detailDiv = document.createElement('div');
         detailDiv.className = 'card-detail';
-        let formalName = row['正式名称'] ? (row['道路名'] || '') + ' ' + row['正式名称'] : (row['道路名'] || '-');
+        let formalName = row['正式名称'] ? (row['道路名'] || '') + row['正式名称'] : (row['道路名'] || '-');
         detailDiv.innerHTML =
           '<b>正式名称:</b> ' + formalName + '<br>' +
           (row['通称'] ? '<b>通称:</b> ' + row['通称'] + '<br>' : '') +
