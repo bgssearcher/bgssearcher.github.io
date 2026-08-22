@@ -276,9 +276,14 @@
       body .content-wrapper { display: flex; flex-direction: column-reverse; flex: 1; min-height: 0; gap: 4px; margin: 0 6px 6px 6px; width: auto; height: auto; max-height: none; }
       body .list-container { width: 100%; min-width: 100%; max-width: 100%; height: auto; max-height: none; flex: 1; min-height: 0;  padding: 0; overflow-y: auto; }
       #map { width: 100%; height: 100dvh; }
-      #sidebar { position: fixed; bottom: 0; left: 0; width: 100%; height: 50vh;
-                background-color: #1e1e1e; border-radius: 20px 20px 0 0; z-index: 1000; box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3); overflow-y: auto; animation: slideUp 0.4s ease-out;
-                @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } } }
+      .sidebar-wrapper { width: 100%; height: 50vh; min-width: auto; top: auto; bottom: 0; left: 0; flex-direction: column; border-radius: 20px 20px 0 0; transform: translateY(0); }
+      .sidebar-wrapper.closed { transform: translateY(100%); }
+      .sidebar-toggle {
+        top: -30px; right: auto; left: 50%; transform: translateX(-50%);
+        width: 60px; height: 30px;
+        border-radius: 10px 10px 0 0;
+      }
+      .sidebar-toggle #toggleIcon { display: inline-block; transform: rotate(90deg); }
       #advancedSearchBtn { width: auto; padding: 0 12px; height: 100%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; box-sizing: border-box; margin: 0; }
       .modal-content { width: 95%; height: 85vh; }
       .checkbox-grid { grid-template-columns: repeat(3, 1fr); }
@@ -584,14 +589,10 @@
       
       currentFilteredData.forEach(function(row, index) {
         if (!row['緯度'] || !row['経度']) return;
-
-        const squareIcon = L.divIcon({
-          className: 'custom-square-marker',
-          iconSize: [12, 12],
-          iconAnchor: [6, 6]
-        });
         
-        const marker = L.marker([row['緯度'], row['経度']], { icon: squareIcon });
+        const defaultIcon = L.divIcon({ className: 'custom-square-marker', iconSize: [12, 12], iconAnchor: [6, 6] });
+        const selectedIcon = L.divIcon({ className: 'custom-square-marker selected', iconSize: [12, 12], iconAnchor: [6, 6] });
+        const marker = L.marker([row['緯度'], row['経度']], { icon: defaultIcon });
         row._marker = marker;
 
         marker.on('click', function() {
@@ -602,16 +603,14 @@
           }
           
           document.querySelectorAll('.data-card.active').forEach(c => c.classList.remove('active', 'highlight'));
-          document.querySelectorAll('.custom-square-marker').forEach(m => m.classList.remove('selected'));
+          currentFilteredData.forEach(r => { if(r._marker) r._marker.setIcon(defaultIcon); });
           
           const targetCard = document.getElementById('card-' + index);
           if (targetCard) {
             targetCard.classList.add('active', 'highlight');
             targetCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          }
-          
-          const iconElement = marker.getElement();
-          if (iconElement) iconElement.classList.add('selected');
+          }     
+          marker.setIcon(selectedIcon);
         });
 
         markers.push(marker);
@@ -689,19 +688,17 @@
             if (c !== card) c.classList.remove('active', 'highlight'); 
           });
           
-          document.querySelectorAll('.custom-square-marker').forEach(m => m.classList.remove('selected'));     
+          currentFilteredData.forEach(r => { if(r._marker) r._marker.setIcon(defaultIcon); });
           const isActive = card.classList.toggle('active');
           
           if (isActive) {
             card.classList.add('highlight');
             card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
             if (row['緯度'] && row['経度']) {
               map.setView([row['緯度'], row['経度']], 16);
               if (row._marker) {
                 markerGroup.zoomToShowLayer(row._marker, function() {
-                  const iconElement = row._marker.getElement();
-                  if (iconElement) iconElement.classList.add('selected');
+                  row._marker.setIcon(selectedIcon);
                 });
               }
             }
