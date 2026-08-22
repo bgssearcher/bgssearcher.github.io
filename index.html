@@ -530,7 +530,8 @@
 
       const prefecture = document.getElementById('advPrefecture')?.value || '';
       const roadType = document.getElementById('advRoadType')?.value || '';
-      const roadNameInput = (document.getElementById('advRoadNameInput')?.value || '').toLowerCase();
+      const roadNameRaw = document.getElementById('advRoadNameInput')?.value || '';
+      const roadNameWords = roadNameRaw.trim() ? roadNameRaw.toLowerCase().split(/[\s,、]+/) : [];
       const addressRaw = document.getElementById('advAddress')?.value || '';
       const addressWords = addressRaw.trim() ? addressRaw.toLowerCase().split(/[\s,、]+/) : [];
       const crossRoadRaw = document.getElementById('advCrossRoad')?.value || '';
@@ -547,7 +548,8 @@
         const matchKeyword = searchWords.length === 0 || searchWords.every(word => desc.indexOf(word) !== -1);
         const matchPrefecture = !prefecture || (row['都道府県'] || '') === prefecture;
         const matchRoadType = !roadType || (row['道路種別'] || '') === roadType;
-        const matchRoadNameInput = !roadNameInput || (row['道路名'] || '').toString().toLowerCase().indexOf(roadNameInput) !== -1;
+        const advRoadSearchTarget = ((row['道路名'] || '') + ' ' + (row['正式名称'] || '') + ' ' + (row['通称'] || '')).toLowerCase();
+        const matchRoadNameInput = roadNameWords.length === 0 || roadNameWords.every(word => advRoadSearchTarget.indexOf(word) !== -1);
         const matchAddress = addressWords.length === 0 || addressWords.every(word => (row['住所'] || '').toString().toLowerCase().indexOf(word) !== -1);
         const matchCrossRoad = crossRoadWords.length === 0 || crossRoadWords.every(word => (row['交差路線'] || '').toString().toLowerCase().indexOf(word) !== -1);
         const matchHighway = highwayWords.length === 0 || highwayWords.every(word => (row['高速'] || '').toString().toLowerCase().indexOf(word) !== -1);
@@ -641,7 +643,11 @@
        
         const h3 = document.createElement('h3');
         h3.className = 'card-name';
-        h3.innerText = row['道路名'] || '名称未設定';
+        let displayTitle = row['道路名'] || '名称未設定';
+        if (row['通称']) {
+          displayTitle += '（' + row['通称'] + '）';
+        }
+        h3.innerText = displayTitle;
         info.appendChild(h3);
        
         const p = document.createElement('p');
@@ -661,7 +667,13 @@
 
         const detailDiv = document.createElement('div');
         detailDiv.className = 'card-detail';
-        detailDiv.innerHTML = '<b>座標:</b> ' + (row['座標'] || '-') + '<br><b>地名:</b> ' + (row['地名'] || '-') + '<br><b>撮影日:</b> ' + displayDate;
+        let formalName = row['正式名称'] ? (row['道路名'] || '') + ' ' + row['正式名称'] : (row['道路名'] || '-');
+        detailDiv.innerHTML =
+          '<b>正式名称:</b> ' + formalName + '<br>' +
+          (row['通称'] ? '<b>通称:</b> ' + row['通称'] + '<br>' : '') +
+          '<b>座標:</b> ' + (row['座標'] || '-') + '<br>' +
+          '<b>地名:</b> ' + (row['地名'] || '-') + '<br>' +
+          '<b>撮影日:</b> ' + displayDate;
         info.appendChild(detailDiv);
 
         card.addEventListener('click', function() {
