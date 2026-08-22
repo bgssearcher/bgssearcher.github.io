@@ -35,11 +35,11 @@
       overflow: hidden;
     }
     .main-content{
-      padding: 10px;
+      padding: 0;
       flex: 1;
       display: flex;
       flex-direction: column;
-      min-height: 0;
+      position: relative;
     }
     h2 {
       color: #2c3e50;
@@ -86,12 +86,10 @@
       outline: none;
     }
     .content-wrapper {
-      display: flex;
-      flex-direction: row;
-      gap: 15px;
+      position: relative;
       width: 100%;
       flex: 1;
-      min-height: 0;
+      display: block;
     }   
     .list-container {
       width: 50%;
@@ -105,19 +103,81 @@
       gap: 10px;
       padding-right: 5px;
       box-sizing: border-box;
-    }
-    .data-card { display: flex;  background: white; border-radius: 8px; overflow: hidden; box-shadow: none; border: 1px solid #eef2f5; cursor: pointer; height: auto; box-sizing: border-box; flex-shrink: 0; }   
+    }   
     .card-img { width: 100px; height: 100px; object-fit: cover; background: #eaeded; flex-shrink: 0; }   
     .card-info { padding: 10px; display: flex; flex-direction: column; justify-content: center; gap: 4px; flex-grow: 1; overflow: hidden; }
     .data-card.active .card-info { justify-content: flex-start; }
-    .card-name { font-size: 14px; font-weight: bold; color: #2c3e50; margin: 0; }
-    .card-address { font-size: 12px; color: #7f8c8d; margin: 0; }   
-    .card-detail { font-size: 12px; color: #34495e; margin: 4px 0 0 0; padding-top: 4px; border-top: 1px dashed #ddd; display: none; padding-right: 5px; word-break: break-all; }
-    .data-card.active .card-detail { display: block; }    
-    .search-container { text-align: left; }
+    .data-card.active .card-detail { display: block; }
    
-    #map { flex: 1; height: 100%; border-radius: 8px; border: 1px solid #eef2f5; outline: none; }
-   
+    #map {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      border: none;
+      border-radius: 0;
+    }
+
+    .sidebar-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 30%;
+      min-width: 320px;
+      z-index: 10;
+      display: flex;
+      transform: translateX(0);
+      transition: transform 0.3s ease;
+      box-shadow: 3px 0 10px rgba(0,0,0,0.4);
+    }
+    .sidebar-wrapper.closed {
+      transform: translateX(-100%);
+    }
+    .sidebar-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #111111;
+      height: 100%;
+    }
+    .search-container {
+      margin: 0; padding: 12px; background: #111111;
+    }
+    .search-container input[type="text"] {
+      background: #2a2a2a; color: #ffffff; border: 1px solid #444;
+    }
+    .search-container input[type="text"]::placeholder { color: #888; }
+    .list-container {
+      width: 100%; max-width: 100%;
+      background: #111111; padding: 0 12px 12px 12px; box-sizing: border-box;
+    }
+    .data-card { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; }
+    .card-name { color: #ffffff; }
+    .card-address { color: #aaaaaa; }
+    .card-detail { color: #cccccc; border-top: 1px dashed #444; }
+    .no-data { background: #111111; color: #888888; }
+    .data-card.highlight { background: #3a2e1d; border: 1px solid #ff9f1c; }
+    .sidebar-toggle {
+      position: absolute;
+      right: -24px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 24px;
+      height: 70px;
+      background: #111111;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 0 8px 8px 0;
+      box-shadow: 3px 0 5px rgba(0,0,0,0.3);
+      font-size: 12px;
+    }
+    
     .no-data { text-align: center; padding: 40px; background: white; border-radius: 8px; color: #7f8c8d; font-size: 14px; width: 100%; box-sizing: border-box; }
     #imageViewer { display: none; position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); align-items: center; justify-content: center; }
     #imageViewer.show { display: flex; }
@@ -308,10 +368,23 @@
   </div>
 
   <div class="content-wrapper">
-    <div class="list-container" id="listContainer">
-      <div class="no-data">読み込み中…</div>
-    </div>
     <div id="map"></div>
+    <div id="sidebarWrapper" class="sidebar-wrapper">
+        <div class="sidebar-main">
+          <div class="search-container">
+            <input type="text" id="searchInput" placeholder="地名を入力…(ｶﾝﾏ,ｽﾍﾟｰｽ区切り可)" oninput="filterData()">
+            <button id="advancedSearchBtn" onclick="openAdvancedSearch()">
+              <span style="font-size: 15px; font-weight: bold;">詳細検索</span>
+            </button>
+          </div>
+          <div class="list-container" id="listContainer">
+            <div class="no-data">読み込み中…</div>
+          </div>
+        </div>
+        <div class="slidebar-toggle" onclick="toggleSidebar()">
+          <span id= "toggleIcon">◀︎</span>
+        </div>
+    </div>
   </div>
 
   <div id="imageViewer" onclick="closeViewer()">
@@ -418,7 +491,8 @@
     const CHUNK_SIZE = 30;
 
     function initMap() {
-      map = L.map('map', { zooming: true, touchZoom: true }).setView([35.6812, 139.7671], 10);
+      map = L.map('map', { zooming: true, touchZoom: true, zoomControl: false; }).setView([35.6812, 139.7671], 10);
+      L.control.zoom({ position: 'topright' }).addTo(map);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors'
       }).addTo(map);
@@ -429,7 +503,7 @@
         animate: false
       }).addTo(map);
 
-      const locateControl = L.control({ position: 'topleft' });
+      const locateControl = L.control({ position: 'topright' });
 
       locateControl.onAdd = function (map) {
         const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
@@ -589,6 +663,8 @@
         row._marker = marker;
 
         marker.on('click', function() {
+          const sidebar = document.getElementById('sidebarWrapper');
+          if (sidebar && sidebar.classList.contains('closed')) toggleSidebar();
           while (currentDisplayCount <= index && currentDisplayCount < currentFilteredData.length) {
             renderListChunk();
           }
@@ -767,6 +843,17 @@
         syncCheckboxStyles();
       }
     });
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebarWrapper');
+      const icon = document.getElementById('toggleIcon');
+      sidebar.classList.toggle('closed');
+      
+      if (sidebar.classList.contains('closed')) {
+        icon.innerText = '▶';
+      } else {
+        icon.innerText = '◀';
+      }
+    }
   </script>
 </body>
 </html>
