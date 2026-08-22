@@ -34,164 +34,100 @@
       height: 100dvh;
       overflow: hidden;
     }
-    .main-content{
+    .main-content {
       padding: 0;
       flex: 1;
       display: flex;
       flex-direction: column;
       position: relative;
-    }
-    h2 {
-      color: #2c3e50;
-      margin: 0 0 15px 0;
-      font-size: 18px;
-      text-align: center;
-    }
-    .search-container {
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
-    }    
-    input[type="text"] {
-      flex: 1;
-      max-width: 400px;
-      padding: 10px;
-      font-size: 16px;
-      border: 2px solid #ddd;
-      border-radius: 8px;
-      box-sizing: border-box; 
-    }    
-    input[type="text"]:focus {
-      border-color: #3498db;
-      outline: none;
-    }
-    .filter-select-wrapper {
-      display: flex;
-      gap: 10px;
-    }
-    .filter-select-wrapper select {
-      padding: 12px;
-      font-size: 16px;
-      border: 2px solid #ddd;
-      border-radius: 8px;
-      background-color: #fff;
-      box-sizing: border-box;
-      color: #333;
-      cursor: pointer;
-    }
-    .filter-select-wrapper select:focus {
-      border-color:#3498db;
-      outline: none;
+      height: 100%;
     }
     .content-wrapper {
       position: relative;
       width: 100%;
-      flex: 1;
-      display: block;
-    }   
-    .list-container {
-      width: 50%;
-      min-width: 50%;
-      max-width: 50%;
       height: 100%;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding-right: 5px;
-      box-sizing: border-box;
-    }   
-    .card-img { width: 100px; height: 100px; object-fit: cover; background: #eaeded; flex-shrink: 0; }   
-    .card-info { padding: 10px; display: flex; flex-direction: column; justify-content: center; gap: 4px; flex-grow: 1; overflow: hidden; }
-    .data-card.active .card-info { justify-content: flex-start; }
-    .data-card.active .card-detail { display: block; }
-   
+      flex: 1;
+      overflow: hidden;
+    }
     #map {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 1;
-      border: none;
-      border-radius: 0;
+      top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 1; border: none; border-radius: 0; outline: none;
     }
 
     .sidebar-wrapper {
       position: absolute;
-      top: 0;
-      left: 0;
-      height: 100%;
-      width: 30%;
+      top: 0; left: 0; height: 100%;
+      width: 30%; /* 横幅3割 */
       min-width: 320px;
       z-index: 10;
       display: flex;
       transform: translateX(0);
       transition: transform 0.3s ease;
-      box-shadow: 3px 0 10px rgba(0,0,0,0.4);
+      box-shadow: 3px 0 10px rgba(0,0,0,0.6);
     }
     .sidebar-wrapper.closed {
       transform: translateX(-100%);
     }
+
     .sidebar-main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: #111111;
-      height: 100%;
-    }
-    .search-container {
-      margin: 0; padding: 12px; background: #111111;
-    }
-    .search-container input[type="text"] {
-      background: #2a2a2a; color: #ffffff; border: 1px solid #444;
-    }
-    .search-container input[type="text"]::placeholder { color: #888; }
-    .list-container {
-      width: 100%; max-width: 100%;
-      background: #111111; padding: 0 12px 12px 12px; box-sizing: border-box;
-    }
-    .data-card { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; }
-    .card-name { color: #ffffff; }
-    .card-address { color: #aaaaaa; }
-    .card-detail { color: #cccccc; border-top: 1px dashed #444; }
-    .no-data { background: #111111; color: #888888; }
-    .data-card.highlight { background: #3a2e1d; border: 1px solid #ff9f1c; }
-    .sidebar-toggle {
-      position: absolute;
-      right: -24px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 24px;
-      height: 70px;
-      background: #111111;
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      border-radius: 0 8px 8px 0;
-      box-shadow: 3px 0 5px rgba(0,0,0,0.3);
-      font-size: 12px;
+      flex: 1; display: flex; flex-direction: column;
+      background: #111111; height: 100%; overflow: hidden;
     }
     
-    .no-data { text-align: center; padding: 40px; background: white; border-radius: 8px; color: #7f8c8d; font-size: 14px; width: 100%; box-sizing: border-box; }
-    #imageViewer { display: none; position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); align-items: center; justify-content: center; }
-    #imageViewer.show { display: flex; }
-    #viewerImage { max-width: 90%; max-height: 90%; border-radius: 4px; }
-
-    .data-card.highlight { background: #fff6e4; border: 1px solid #ffe1b3; }
-
+    .search-container {
+      margin: 0; padding: 12px; background: #111111;
+      display: flex; justify-content: flex-start; align-items: center; gap: 10px;
+    }
+    .search-container input[type="text"] {
+      flex: 1; padding: 10px; font-size: 16px; border-radius: 8px; box-sizing: border-box;
+      background: #2a2a2a; color: #ffffff; border: 1px solid #444;
+    }
+    .search-container input[type="text"]:focus {
+      border-color: #ff9f1c; outline: none;
+    }
+    .search-container input[type="text"]::placeholder { color: #888; }
+    
     #advancedSearchBtn {
-      background: #ecf0f1; border: 2px solid #bdc3c7; color: #2c3e50;
+      background: #333; border: 1px solid #555; color: #fff;
       border-radius: 8px; padding: 10px; font-size: 16px;
       box-sizing: border-box; cursor: pointer; white-space: nowrap;
       transition: background 0.2s;
     }
-    #advancedSearchBtn:hover { background: #dfe6e9; }
+    #advancedSearchBtn:hover { background: #444; }
+
+    .list-container {
+      width: 100%; max-width: 100%; height: 100%;
+      overflow-y: auto; -webkit-overflow-scrolling: touch;
+      display: flex; flex-direction: column; gap: 10px;
+      background: #111111; padding: 0 12px 12px 12px; box-sizing: border-box;
+    }
+    .data-card { 
+      display: flex; border-radius: 8px; overflow: hidden; 
+      border: 1px solid #333; cursor: pointer; height: auto; 
+      box-sizing: border-box; flex-shrink: 0; background: #1e1e1e; 
+    }
+    .card-img { width: 100px; height: 100px; object-fit: cover; background: #333; flex-shrink: 0; }
+    .card-info { padding: 10px; display: flex; flex-direction: column; justify-content: center; gap: 4px; flex-grow: 1; overflow: hidden; }
+    .data-card.active .card-info { justify-content: flex-start; }
+    .card-name { font-size: 14px; font-weight: bold; margin: 0; color: #ffffff; }
+    .card-address { font-size: 12px; margin: 0; color: #aaaaaa; }
+    .card-detail { font-size: 12px; margin: 4px 0 0 0; padding-top: 4px; display: none; padding-right: 5px; word-break: break-all; color: #cccccc; border-top: 1px dashed #444; }
+    .data-card.active .card-detail { display: block; }
+    .no-data { text-align: center; padding: 40px; border-radius: 8px; font-size: 14px; width: 100%; box-sizing: border-box; background: #111111; color: #888888; }
+    .data-card.highlight { background: #3a2e1d; border: 1px solid #ff9f1c; }
+
+    .sidebar-toggle {
+      position: absolute; right: -24px; top: 50%; transform: translateY(-50%);
+      width: 24px; height: 70px; background: #111111; color: #ffffff;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; border-radius: 0 8px 8px 0; box-shadow: 3px 0 5px rgba(0,0,0,0.5);
+      font-size: 12px;
+    }
+    
+    #imageViewer { display: none; position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); align-items: center; justify-content: center; }
+    #imageViewer.show { display: flex; }
+    #viewerImage { max-width: 90%; max-height: 90%; border-radius: 4px; }
 
     .modal-overlay {
       display: none; position: fixed; z-index: 9999; top: 0; left: 0;
@@ -359,17 +295,9 @@
   </header>
 
   <div class="main-content">
-
-  <div class="search-container">
-    <input type="text" id="searchInput" placeholder="地名を入力…(ｶﾝﾏ,ｽﾍﾟｰｽ区切り可)" oninput="filterData()">
-    <button id="advancedSearchBtn" onclick="openAdvancedSearch()">
-      <span style="font-size: 15px; font-weight: bold;">詳細検索</span>
-    </button>
-  </div>
-
-  <div class="content-wrapper">
-    <div id="map"></div>
-    <div id="sidebarWrapper" class="sidebar-wrapper">
+    <div class="content-wrapper">
+      <div id="map"></div>   
+      <div id="sidebarWrapper" class="sidebar-wrapper">
         <div class="sidebar-main">
           <div class="search-container">
             <input type="text" id="searchInput" placeholder="地名を入力…(ｶﾝﾏ,ｽﾍﾟｰｽ区切り可)" oninput="filterData()">
@@ -381,9 +309,10 @@
             <div class="no-data">読み込み中…</div>
           </div>
         </div>
-        <div class="slidebar-toggle" onclick="toggleSidebar()">
-          <span id= "toggleIcon">◀︎</span>
+        <div class="sidebar-toggle" onclick="toggleSidebar()">
+          <span id="toggleIcon">◀</span>
         </div>
+      </div>
     </div>
   </div>
 
@@ -720,7 +649,7 @@
         const h3 = document.createElement('h3');
         h3.className = 'card-name';
         let displayTitle = row['道路名'] || '名称未設定';
-        if (row['通称']) {
+        if (row['道路種別'] !== '国道' && row['通称']) {
           displayTitle += '（' + row['通称'] + '）';
         }
         h3.innerText = displayTitle;
