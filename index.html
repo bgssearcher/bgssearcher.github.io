@@ -279,7 +279,7 @@
       body .content-wrapper { display: flex; flex-direction: column-reverse; flex: 1; min-height: 0; gap: 4px; margin: 0; width: auto; height: auto; max-height: none; }
       body .list-container { width: 100%; min-width: 100%; max-width: 100%; height: auto; max-height: none; flex: 1; min-height: 0;  padding: 0 0 16px 0; overflow-y: auto; }
       #map { width: 100%; height: 100%; }
-      .sidebar-wrapper { width: 100%; height: 30vh; min-width: auto; top: auto; bottom: 0; left: 0;
+      .sidebar-wrapper { width: 100%; height: 35vh; min-width: auto; top: auto; bottom: 0; left: 0;
                         flex-direction: column; border-radius: 20px 20px 0 0; transform: translateY(0);
                         background: #ffffff; padding-bottom: env(safe-area-inset-bottom); box-sizing: border-box; }
       .sidebar-wrapper.closed { transform: translateY(100%); }
@@ -780,8 +780,10 @@
                   map.panBy([0, offsetY], { animate: true });
                 }
               };
+              const targetZoom = 18;
               if (row._marker) {
                 markerGroup.zoomToShowLayer(row._marker, function() {
+                  map.setView(targetLatLng, targetZoom);
                   row._marker.setIcon(selectedIcon);
                   adjustCenterForMobile();
                 });
