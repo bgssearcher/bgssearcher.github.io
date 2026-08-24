@@ -755,7 +755,8 @@
           '<b>座標:</b> ' + (row['座標'] || '-') + '<br>' +
           '<b>地名:</b> ' + (row['地名'] || '-') + '<br>' +
           '<b>撮影日:</b> ' + displayDate + '<br>' +
-          '<a href="https://www.google.com/maps?layer=c&cbll=' + row['緯度'] + ',' + row['経度'] + '" target="_blank" rel="noopener noreferrer" style="color: #3498db; font-weight: bold; text-decoration: underline; display: inline-block; margin-top: 8px;">ストリートビューを開く</a>';
+          '<a href="https://www.google.com/maps?layer=c&cbll=' + row['緯度'] + ',' + row['経度'] + '" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" ' +
+          'style="color: #3498db; font-weight: bold; text-decoration: underline; display: inline-block; margin-top: 8px;">ストリートビューを開く</a>';
         info.appendChild(detailDiv);
 
         card.addEventListener('click', function() {
@@ -780,7 +781,7 @@
                   map.panBy([0, offsetY], { animate: true });
                 }
               };
-              const targetZoom = 18;
+              const targetZoom = 17;
               if (row._marker) {
                 markerGroup.zoomToShowLayer(row._marker, function() {
                   map.setView(targetLatLng, targetZoom);
