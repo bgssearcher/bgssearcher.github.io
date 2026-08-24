@@ -82,7 +82,7 @@
     }
     .search-container input[type="text"] {
       flex: 1; padding: 10px; font-size: 16px; border-radius: 8px; box-sizing: border-box;
-      border: 2px solid: #eef2f5; background: #ffffff;
+      border: 2px solid #eef2f5; background: #ffffff;
     }
     .search-container input[type="text"]:focus {
       border-color: #3498db; outline: none; background: #ffffff;
@@ -420,12 +420,21 @@
             <div class="feature-card"><input type="checkbox" name="advFeature" value="矢印なし"><div class="card-content"><img src="img/crossimg_x.png" alt="画像" onerror="this.style.display='none'"><span>矢印なし</span></div></div>
           </div>
         </div>
-
       </div>
       
-      <div class="modal-footer">
-        <button class="apply-btn" onclick="applyAdvancedSearch()">適用</button>
-        <button class="clear-btn" onclick="clearAdvancedSearch()">条件をクリア</button>
+      <div class="modal-footer" style="display: flex; flex-direction: column; gap: 15px;">
+        <div style="display: flex; justify-content: center; gap: 20px;">
+          <label style="cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 14px; font-weight: bold; color: #2c3e50;">
+            <input type="radio" name="searchMode" value="AND" checked style="width: 16px; height: 16px;"> すべて満たす (AND)
+          </label>
+          <label style="cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 14px; font-weight: bold; color: #2c3e50;">
+            <input type="radio" name="searchMode" value="OR" style="width: 16px; height: 16px;"> いずれかを満たす (OR)
+          </label>
+        </div>
+        <div style="display: flex; gap: 10px; width: 100%;">
+          <button class="clear-btn" onclick="clearAdvancedSearch()">条件をクリア</button>
+          <button class="apply-btn" onclick="applyAdvancedSearch()">適用</button>
+        </div>
       </div>
     </div>
   </div>
@@ -583,21 +592,56 @@
       const featureCheckboxes = document.querySelectorAll('input[name="advFeature"]:checked');
       const selectedFeatures = Array.from(featureCheckboxes).map(cb => cb.value);
 
+      // 選択されている検索モード（AND / OR）を取得
+      const searchMode = document.querySelector('input[name="searchMode"]:checked')?.value || 'AND';
+
       const filtered = allData.filter(function(row) {
         if (!row) return false;
-        const desc = (row['地名'] || '').toString().toLowerCase();
-        const matchKeyword = searchWords.length === 0 || searchWords.every(word => desc.indexOf(word) !== -1);
-        const matchPrefecture = !prefecture || (row['都道府県'] || '') === prefecture;
-        const matchRoadType = !roadType || (row['道路種別'] || '') === roadType;
-        const advRoadSearchTarget = ((row['道路名'] || '') + ' ' + (row['正式名称'] || '') + ' ' + (row['通称'] || '')).toLowerCase();
-        const matchRoadNameInput = roadNameWords.length === 0 || roadNameWords.every(word => advRoadSearchTarget.indexOf(word) !== -1);
-        const matchAddress = addressWords.length === 0 || addressWords.every(word => (row['住所'] || '').toString().toLowerCase().indexOf(word) !== -1);
-        const matchCrossRoad = crossRoadWords.length === 0 || crossRoadWords.every(word => (row['交差路線'] || '').toString().toLowerCase().indexOf(word) !== -1);
-        const matchHighway = highwayWords.length === 0 || highwayWords.every(word => (row['高速'] || '').toString().toLowerCase().indexOf(word) !== -1);
-        const rowFeature = (row['特徴'] || '').toString();
-        const matchFeature = selectedFeatures.length === 0 || selectedFeatures.every(feat => rowFeature.indexOf(feat) !== -1);
-        return matchKeyword && matchPrefecture && matchRoadType && matchRoadNameInput && matchAddress && matchCrossRoad && matchHighway && matchFeature;
+        const conditions = [];
+        if (searchWords.length > 0) {
+          const desc = (row['地名'] || '').toString().toLowerCase();
+          conditions.push(searchWords.every(word => desc.indexOf(word) !== -1));
+        }
+        if (prefecture) {
+          conditions.push((row['都道府県'] || '') === prefecture);
+        }
+        if (roadType) {
+          conditions.push((row['道路種別'] || '') === roadType);
+        }
+        if (roadNameWords.length > 0) {
+          const advRoadSearchTarget = ((row['道路名'] || '') + ' ' + (row['正式名称'] || '') + ' ' + (row['通称'] || '')).toLowerCase();
+          conditions.push(roadNameWords.every(word => advRoadSearchTarget.indexOf(word) !== -1));
+        }
+        if (addressWords.length > 0) {
+          const addressTarget = (row['住所'] || '').toString().toLowerCase();
+          conditions.push(addressWords.every(word => addressTarget.indexOf(word) !== -1));
+        }
+        if (crossRoadWords.length > 0) {
+          const crossRoadTarget = (row['交差路線'] || '').toString().toLowerCase();
+          conditions.push(crossRoadWords.every(word => crossRoadTarget.indexOf(word) !== -1));
+        }
+        if (highwayWords.length > 0) {
+          const highwayTarget = (row['高速'] || '').toString().toLowerCase();
+          conditions.push(highwayWords.every(word => highwayTarget.indexOf(word) !== -1));
+        }
+        if (selectedFeatures.length > 0) {
+          const rowFeature = (row['特徴'] || '').toString();
+          if (searchMode === 'AND') {
+            conditions.push(selectedFeatures.every(feat => rowFeature.indexOf(feat) !== -1));
+          } else {
+            conditions.push(selectedFeatures.some(feat => rowFeature.indexOf(feat) !== -1));
+          }
+        }
+
+        if (conditions.length === 0) return true;
+
+        if (searchMode === 'AND') {
+          return conditions.every(result => result === true);
+        } else {
+          return conditions.some(result => result === true);
+        }
       });
+      
       renderData(filtered);
     }
 
@@ -711,8 +755,7 @@
           '<b>座標:</b> ' + (row['座標'] || '-') + '<br>' +
           '<b>地名:</b> ' + (row['地名'] || '-') + '<br>' +
           '<b>撮影日:</b> ' + displayDate + '<br>' +
-          '<a href="https://www.google.com/maps?layer=c&cbll=' + row['緯度'] + ',' + row['経度'] + '" target="_blank" rel="noopener noreferrer" 
-          style="color: #3498db; font-weight: bold; text-decoration: underline; display: inline-block; margin-top: 8px;">ストリートビューを開く</a>';
+          '<a href="https://www.google.com/maps?layer=c&cbll=' + row['緯度'] + ',' + row['経度'] + '" target="_blank" rel="noopener noreferrer" style="color: #3498db; font-weight: bold; text-decoration: underline; display: inline-block; margin-top: 8px;">ストリートビューを開く</a>';
         info.appendChild(detailDiv);
 
         card.addEventListener('click', function() {
@@ -803,6 +846,8 @@
       checkboxes.forEach(function(cb) {
         cb.checked = false;
       });
+      const modeRadioAND = document.querySelector('input[name="searchMode"][value="AND"]');
+      if (modeRadioAND) modeRadioAND.checked = true;
       syncCheckboxStyles();
       filterData();
     }
