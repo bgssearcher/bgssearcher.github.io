@@ -10,7 +10,7 @@
   </script>
   <base target="_top">
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="google-site-verification" content="Q55XdGfgCRa8f_CpTHVnWHHRnz0POVzW-UhfwbEUPR0" />
   <title>青看板検索ツール</title>
   <meta name="description" content="日本全国の青看板を地名や道路種別（国道・県道）、形状、地図から検索できるツールです。">
@@ -20,8 +20,8 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <link rel="canonical" href="https://sesso-richu.github.io/bgssearcher/">
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
-  <link rel="apple-touch-icon" href="favicon.png">
+  <link rel="icon" href="./img/favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" href="./img/favicon.png">
   <style>
     html, body {
       width: 100%;
@@ -199,6 +199,7 @@
       position: relative;
       color: white;
       padding: 8px 20px;
+      padding-top: calc(8px + env(safe-area-inset-top));
     }
     .custom-header::before {
       content: '';
@@ -276,9 +277,11 @@
       body .filter-select-wrapper { width: 100%; gap: 4px; }
       body .filter-select-wrapper select { flex: 1; width: 50%; padding: 6px 4px; font-size: 12px; height: auto; }
       body .content-wrapper { display: flex; flex-direction: column-reverse; flex: 1; min-height: 0; gap: 4px; margin: 0 6px 6px 6px; width: auto; height: auto; max-height: none; }
-      body .list-container { width: 100%; min-width: 100%; max-width: 100%; height: auto; max-height: none; flex: 1; min-height: 0;  padding: 0; overflow-y: auto; }
+      body .list-container { width: 100%; min-width: 100%; max-width: 100%; height: auto; max-height: none; flex: 1; min-height: 0;  padding: 0 0 16px 0; overflow-y: auto; }
       #map { width: 100%; height: 100dvh; }
-      .sidebar-wrapper { width: 100%; height: 30vh; min-width: auto; top: auto; bottom: 0; left: 0; flex-direction: column; border-radius: 20px 20px 0 0; transform: translateY(0); }
+      .sidebar-wrapper { width: 100%; height: 30vh; min-width: auto; top: auto; bottom: 0; left: 0;
+                        flex-direction: column; border-radius: 20px 20px 0 0; transform: translateY(0);
+                        background: #ffffff; padding-bottom: env(safe-area-inset-bottom); box-sizing: border-box; }
       .sidebar-wrapper.closed { transform: translateY(100%); }
       .sidebar-toggle {
         top: -30px; right: auto; left: 50%; transform: translateX(-50%);
@@ -409,6 +412,7 @@
             <div class="feature-card"><input type="checkbox" name="advFeature" value="T字路"><div class="card-content"><img src="img/crossimg_stp.png" alt="画像" onerror="this.style.display='none'"><span>T字路</span></div></div>
             <div class="feature-card"><input type="checkbox" name="advFeature" value="2交差"><div class="card-content"><img src="img/crossimg_2.png" alt="画像" onerror="this.style.display='none'"><span>2交差</span></div></div>
             <div class="feature-card"><input type="checkbox" name="advFeature" value="3交差以上"><div class="card-content"><img src="img/crossimg_3.png" alt="画像" onerror="this.style.display='none'"><span>3交差以上</span></div></div>
+            <div class="feature-card"><input type="checkbox" name="advFeature" value="カーブ"><div class="card-content"><img src="img/curve.png" alt="画像" onerror="this.style.display='none'"><span>カーブ</span></div></div>
             <div class="feature-card"><input type="checkbox" name="advFeature" value="ランプ"><div class="card-content"><img src="img/ramp.png" alt="画像" onerror="this.style.display='none'"><span>ランプ</span></div></div>
             <div class="feature-card"><input type="checkbox" name="advFeature" value="線路"><div class="card-content"><img src="img/rail.png" alt="画像" onerror="this.style.display='none'"><span>線路</span></div></div>
             <div class="feature-card"><input type="checkbox" name="advFeature" value="橋梁"><div class="card-content"><img src="img/bridge.png" alt="画像" onerror="this.style.display='none'"><span>橋梁</span></div></div>
@@ -452,15 +456,26 @@
       }).addTo(map);
 
       const locateControl = L.control({ position: 'topright' });
+      let isTracking = false;
 
       locateControl.onAdd = function (map) {
         const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-        div.innerHTML = '<a class="locate-button" title="現在地を表示">📍</a>';
+        div.innerHTML = '<a class="locate-button" id="trackBtn" title="現在地を表示">📍</a>';
         
         div.addEventListener('click', function (e) {
           e.stopPropagation();
           e.preventDefault();
-          map.locate({ setView: true, maxZoom: 16, enableHighAccuracy: false, timeout: 15000, maximumAge: 10000 });
+          const btn = document.getElementById('trackBtn');
+          
+          if (!isTracking) {
+            map.locate({ setView: true, maxZoom: 16, watch: true, enableHighAccuracy: true });
+            btn.style.backgroundColor = '#ebf5fb';
+            isTracking = true;
+          } else {
+            map.stopLocate();
+            btn.style.backgroundColor = '#fff';
+            isTracking = false;
+          }
         });
         return div;
       };
@@ -470,12 +485,16 @@
       map.on('locationfound', function (e) {
         if (currentLocMarker) map.removeLayer(currentLocMarker);
         if (currentLocCircle) map.removeLayer(currentLocCircle);
-        currentLocMarker = L.marker(e.latlng).addTo(map)
-        currentLocCircle = L.circle(e.latlng, e.accuracy).addTo(map);
+        currentLocMarker = L.circleMarker(e.latlng, { radius: 8, color: '#fff', weight: 2, fillColor: '#3498db', fillOpacity: 1 }).addTo(map);
+        currentLocCircle = L.circle(e.latlng, { radius: e.accuracy, color: '#3498db', weight: 1, fillColor: '#3498db', fillOpacity: 0.15 }).addTo(map);
       });
       
       map.on('locationerror', function (e) {
         alert("位置情報の取得に失敗しました。端末のGPS設定やブラウザの権限を確認してください。");
+        isTracking = false;
+        if (document.getElementById('trackBtn')) {
+          document.getElementById('trackBtn').style.backgroundColor = '#fff';
+        }
       });
     }
 
@@ -691,7 +710,9 @@
           (row['通称'] ? '<b>通称:</b> ' + row['通称'] + '<br>' : '') +
           '<b>座標:</b> ' + (row['座標'] || '-') + '<br>' +
           '<b>地名:</b> ' + (row['地名'] || '-') + '<br>' +
-          '<b>撮影日:</b> ' + displayDate;
+          '<b>撮影日:</b> ' + displayDate + '<br>' +
+          '<a href="https://www.google.com/maps?layer=c&cbll=' + row['緯度'] + ',' + row['経度'] + '" target="_blank" rel="noopener noreferrer" 
+          style="color: #3498db; font-weight: bold; text-decoration: underline; display: inline-block; margin-top: 8px;">ストリートビューを開く</a>';
         info.appendChild(detailDiv);
 
         card.addEventListener('click', function() {
@@ -706,12 +727,23 @@
             card.classList.add('highlight');
             card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             if (row['緯度'] && row['経度']) {
-              map.setView([row['緯度'], row['経度']], 16);
+              const targetLatLng = [row['緯度'], row['経度']];
+              const adjustCenterForMobile = function() {
+                const sidebar = document.getElementById('sidebarWrapper');
+                const isMobile = window.innerWidth <= 768;
+                const isSidebarOpen = sidebar && !sidebar.classList.contains('closed');
+                if (isMobile && isSidebarOpen) {
+                  const offsetY = window.innerHeight * 0.18;
+                  map.panBy([0, offsetY], { animate: true });
+                }
+              };
               if (row._marker) {
                 markerGroup.zoomToShowLayer(row._marker, function() {
                   row._marker.setIcon(selectedIcon);
+                  adjustCenterForMobile();
                 });
-              }
+              } else {
+                map.setView(targetLatLng, 16); adjustCenterForMobile(); }
             }
           } else {
             card.classList.remove('highlight');
