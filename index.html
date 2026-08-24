@@ -419,6 +419,11 @@
             <div class="feature-card"><input type="checkbox" name="advFeature" value="連名"><div class="card-content"><img src="img/consecutive.png" alt="画像" onerror="this.style.display='none'"><span>連名</span></div></div>
             <div class="feature-card"><input type="checkbox" name="advFeature" value="矢印なし"><div class="card-content"><img src="img/crossimg_x.png" alt="画像" onerror="this.style.display='none'"><span>矢印なし</span></div></div>
           </div>
+
+          <div class="feature-section-title">《字体》</div>
+          <div class="checkbox-grid">
+            <div class="feature-card"><input type="checkbox" name="advFeature" value="旧式"><div class="card-content"><img src="img/retro.jpg" alt="画像" onerror="this.style.display='none'"><span>旧式</span></div></div>
+          </div>
         </div>
       </div>
       
@@ -755,8 +760,8 @@
           '<b>座標:</b> ' + (row['座標'] || '-') + '<br>' +
           '<b>地名:</b> ' + (row['地名'] || '-') + '<br>' +
           '<b>撮影日:</b> ' + displayDate + '<br>' +
-          '<a href="https://www.google.com/maps?layer=c&cbll=' + row['緯度'] + ',' + row['経度'] + '" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" ' +
-          'style="color: #3498db; font-weight: bold; text-decoration: underline; display: inline-block; margin-top: 8px;">ストリートビューを開く</a>';
+          '<a href="https://www.google.com/maps?q=' + row['緯度'] + ',' + row['経度'] + '" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" ' +
+          'style="color: #3498db; font-weight: bold; text-decoration: underline; display: inline-block; margin-top: 8px;">Googleマップで開く</a>';
         info.appendChild(detailDiv);
 
         card.addEventListener('click', function() {
