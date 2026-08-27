@@ -560,16 +560,13 @@
               item[header] = cell ? (cell.v !== null ? String(cell.v) : '') : '';
             }
           });
-          if (item['座標']) {
-            const coords = String(item['座標']).split(/[、,，\s]+/);
-            if (coords.length >= 2) {
-              item['緯度'] = parseFloat(coords[0]);
-              item['経度'] = parseFloat(coords[1]);
-            }
+          if (item['lat'] && item['lng']) {
+            item['lat'] = parseFloat(item['lat']);
+            item['lng'] = parseFloat(item['lng']);
           }
           item['名称'] = item['道路名'] || item['地名'] || '無名のスポット';
           return item;
-        }).filter(item => item !== null && !isNaN(item['緯度']) && !isNaN(item['経度']));
+        }).filter(item => item !== null && !isNaN(item['lat']) && !isNaN(item['lng']));
 
         if (formattedData.length === 0) throw new Error('表示できるデータが0件です');
 
@@ -677,11 +674,11 @@
       const markers = []; 
       
       currentFilteredData.forEach(function(row, index) {
-        if (!row['緯度'] || !row['経度']) return;
+        if (!row['lat'] || !row['lng']) return;
         
         const defaultIcon = L.divIcon({ className: 'custom-square-marker', iconSize: [12, 12], iconAnchor: [6, 6] });
         const selectedIcon = L.divIcon({ className: 'custom-square-marker selected', iconSize: [12, 12], iconAnchor: [6, 6] });
-        const marker = L.marker([row['緯度'], row['経度']], { icon: defaultIcon });
+        const marker = L.marker([row['lat'], row['lng']], { icon: defaultIcon });
         row._marker = marker;
 
         marker.on('click', function() {
@@ -703,7 +700,7 @@
         });
 
         markers.push(marker);
-        bounds.push([row['緯度'], row['経度']]);
+        bounds.push([row['lat'], row['lng']]);
       });
 
       markerGroup.addLayers(markers);
@@ -767,10 +764,10 @@
         detailDiv.innerHTML =
           '<b>正式名称:</b> ' + formalName + '<br>' +
           (row['通称'] ? '<b>通称:</b> ' + row['通称'] + '<br>' : '') +
-          '<b>座標:</b> ' + (row['座標'] || '-') + '<br>' +
+          '<b>座標:</b> ' + (row['lat'] && row['lng'] ? row['lat'] + ', ' + row['lng'] : '-') + '<br>' +
           '<b>地名:</b> ' + (row['地名'] || '-') + '<br>' +
           '<b>撮影日:</b> ' + displayDate + '<br>' +
-          '<a href="https://www.google.com/maps?q=' + row['緯度'] + ',' + row['経度'] + '" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" ' +
+          '<a href="https://www.google.com/maps?q=' + row['lat'] + ',' + row['lng'] + '" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" ' +
           'style="color: #3498db; font-weight: bold; text-decoration: underline; display: inline-block; margin-top: 8px;">Googleマップで開く</a>';
         info.appendChild(detailDiv);
 
@@ -785,8 +782,8 @@
           if (isActive) {
             card.classList.add('highlight');
             card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            if (row['緯度'] && row['経度']) {
-              const targetLatLng = [row['緯度'], row['経度']];
+            if (row['lat'] && row['lng']) {
+              const targetLatLng = [row['lat'], row['lng']];
               const adjustCenterForMobile = function() {
                 const sidebar = document.getElementById('sidebarWrapper');
                 const isMobile = window.innerWidth <= 768;
