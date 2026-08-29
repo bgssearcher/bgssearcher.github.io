@@ -895,8 +895,7 @@
           startHeight = 0;
         } else {
           startHeight = sidebar.getBoundingClientRect().height;
-        }
-        
+        }  
         sidebar.style.transition = 'none'; 
       }, { passive: true });
 
@@ -917,8 +916,9 @@
           
           let newHeight = startHeight + deltaY;
           const maxHeight = window.innerHeight * 0.85;
+          const minHeight = 80;
           if (newHeight > maxHeight) newHeight = maxHeight;
-          if (newHeight < 60) newHeight = 60;       
+          if (newHeight < minHeight) newHeight = minHeight;
           sidebar.style.height = `${newHeight}px`;
         }
       }, { passive: false });
@@ -927,14 +927,6 @@
         if (window.innerWidth > 768) return;
         sidebar.style.transition = ''; 
         if (isDragging) {
-          const currentHeight = sidebar.getBoundingClientRect().height;
-          
-          // 下の方（120px以下）まで押し下げられたら、完全に閉じる（スナップ機能）
-          if (currentHeight < 120) {
-            sidebar.classList.add('closed');
-            sidebar.style.height = ''; 
-            icon.innerText = '▶';
-          }
           setTimeout(() => { blockClick = false; }, 100);
         }
       });
