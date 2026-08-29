@@ -534,37 +534,25 @@
       });
 
       try {
-        const dataUrl = 'https://docs.google.com/spreadsheets/d/11TIskUDnOrnWfnyXt9-IrFuSRRQHhpLTxjcQ1U6GXes/gviz/tq?tqx=out:json&sheet=シート1';      
+        const dataUrl = 'data/bgs.json';      
         const response = await fetch(dataUrl);
-        const text = await response.text();      
-        const jsonStr = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
-        const obj = JSON.parse(jsonStr);
-        const table = obj.table;      
-        let headers = [];
-        let dataRows = [];
-        
-        if (table.cols && table.cols.some(c => c.label)) {
-          headers = table.cols.map(c => c.label ? String(c.label).trim() : '');
-          dataRows = table.rows;
-        } else {
-          headers = table.rows[0].c.map(cell => cell ? (cell.v !== null ? String(cell.v).trim() : '') : '');
-          dataRows = table.rows.slice(1);
-        }
+        if (!response.ok) { throw new Error('ネットワークエラーが発生しました: ' + response.status); }
+        const rawData = await response.json();
 
-        const formattedData = dataRows.map(row => {
-          if (!row || !row.c) return null;
-          const item = {};
-          row.c.forEach((cell, index) => {
-            const header = headers[index];
-            if (header) {
-              item[header] = cell ? (cell.v !== null ? String(cell.v) : '') : '';
-            }
-          });
+        const formattedData = rawData.map(item => {
+          if (!item) return null;  
           if (item['lat'] && item['lng']) {
             item['lat'] = parseFloat(item['lat']);
             item['lng'] = parseFloat(item['lng']);
           }
           item['名称'] = item['道路名'] || item['地名'] || '無名のスポット';
+          Object.keys(item).forEach(key => {
+            if (item[key] === null || item[key] === undefined) {
+              item[key] = '';
+            } else {
+              item[key] = String(item[key]);
+            }
+          });
           return item;
         }).filter(item => item !== null && !isNaN(item['lat']) && !isNaN(item['lng']));
 
