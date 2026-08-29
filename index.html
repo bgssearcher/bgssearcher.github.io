@@ -863,14 +863,22 @@
     let blockClick = false;
 
     function toggleSidebar() {
-      if (blockClick) return;     
+      if (blockClick) return;    
       const sidebar = document.getElementById('sidebarWrapper');
-      const icon = document.getElementById('toggleIcon');     
-      sidebar.classList.toggle('closed');
-      sidebar.style.height = ''; // 開閉時に高さを初期値(35vh)にリセット
-      if (sidebar.classList.contains('closed')) {
-        icon.innerText = '▶';
+      const icon = document.getElementById('toggleIcon');
+      const isClosing = !sidebar.classList.contains('closed');
+      
+      if (isClosing) {
+        sidebar.classList.add('closed');
+        icon.innerText = '▶';    
+        setTimeout(() => {
+          if (sidebar.classList.contains('closed')) {
+            sidebar.style.height = '';
+          }
+        }, 300);
       } else {
+        sidebar.style.height = '';
+        sidebar.classList.remove('closed');
         icon.innerText = '◀';
       }
     }
