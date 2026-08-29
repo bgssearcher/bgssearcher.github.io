@@ -535,7 +535,7 @@
       });
 
       try {
-        const dataUrl = 'data/bgs.json';      
+        const dataUrl = 'https://gist.githubusercontent.com/Sesso-richu/b4103ef817678288cd1950fea60a8a01/raw/bgs.json';      
         const response = await fetch(dataUrl);
         if (!response.ok) { throw new Error('ネットワークエラーが発生しました: ' + response.status); }
         const rawData = await response.json();
