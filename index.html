@@ -858,17 +858,87 @@
         syncCheckboxStyles();
       }
     });
+    
+    let isDragging = false;
+    let blockClick = false;
+
     function toggleSidebar() {
+      if (blockClick) return;     
       const sidebar = document.getElementById('sidebarWrapper');
-      const icon = document.getElementById('toggleIcon');
+      const icon = document.getElementById('toggleIcon');     
       sidebar.classList.toggle('closed');
-      
+      sidebar.style.height = ''; // 開閉時に高さを初期値(35vh)にリセット
       if (sidebar.classList.contains('closed')) {
         icon.innerText = '▶';
       } else {
         icon.innerText = '◀';
       }
     }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      const toggleBtn = document.querySelector('.sidebar-toggle');
+      const sidebar = document.getElementById('sidebarWrapper');
+      const icon = document.getElementById('toggleIcon');
+      
+      let startY = 0;
+      let startHeight = 0;
+      let isClosedStart = false;
+
+      toggleBtn.addEventListener('touchstart', (e) => {
+        if (window.innerWidth > 768) return;        
+        startY = e.touches[0].clientY;
+        isDragging = false;
+        blockClick = false;
+        isClosedStart = sidebar.classList.contains('closed');
+        
+        if (isClosedStart) {
+          startHeight = 0;
+        } else {
+          startHeight = sidebar.getBoundingClientRect().height;
+        }
+        
+        sidebar.style.transition = 'none'; 
+      }, { passive: true });
+
+      toggleBtn.addEventListener('touchmove', (e) => {
+        if (window.innerWidth > 768) return;     
+        const currentY = e.touches[0].clientY;
+        const deltaY = startY - currentY;
+        
+        if (Math.abs(deltaY) > 5) {
+          isDragging = true;
+          blockClick = true; 
+          e.preventDefault();
+          
+          if (isClosedStart) {
+            sidebar.classList.remove('closed');
+            icon.innerText = '◀';
+          }
+          
+          let newHeight = startHeight + deltaY;
+          const maxHeight = window.innerHeight * 0.85;
+          if (newHeight > maxHeight) newHeight = maxHeight;
+          if (newHeight < 60) newHeight = 60;       
+          sidebar.style.height = `${newHeight}px`;
+        }
+      }, { passive: false });
+
+      toggleBtn.addEventListener('touchend', () => {
+        if (window.innerWidth > 768) return;
+        sidebar.style.transition = ''; 
+        if (isDragging) {
+          const currentHeight = sidebar.getBoundingClientRect().height;
+          
+          // 下の方（120px以下）まで押し下げられたら、完全に閉じる（スナップ機能）
+          if (currentHeight < 120) {
+            sidebar.classList.add('closed');
+            sidebar.style.height = ''; 
+            icon.innerText = '▶';
+          }
+          setTimeout(() => { blockClick = false; }, 100);
+        }
+      });
+    });
   </script>
 </body>
 </html>
