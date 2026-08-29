@@ -86,11 +86,11 @@
     }
   
     .search-container {
-      margin: 0; padding: 12px; background: #ffffff;
+      margin: 0; padding: 12px 12px 6px 12px; background: #ffffff;
       display: flex; justify-content: flex-start; align-items: center; gap: 10px;
     }
     .search-container input[type="text"] {
-      flex: 1; padding: 10px; font-size: 16px; border-radius: 8px; box-sizing: border-box;
+      flex: 1; min-width: 0; padding: 10px; font-size: 16px; border-radius: 8px; box-sizing: border-box;
       border: 2px solid #eef2f5; background: #ffffff;
     }
     .search-container input[type="text"]:focus {
@@ -99,7 +99,7 @@
     .search-container input[type="text"]::placeholder { color: #888; }
     
     #advancedSearchBtn {
-      background: #eef2f5; border: 2px solid #bdc3c7; color: #2c3e50;
+      flex-shrink: 0; background: #eef2f5; border: 2px solid #bdc3c7; color: #2c3e50;
       border-radius: 8px; padding: 10px; font-size: 16px;
       box-sizing: border-box; cursor: pointer; white-space: nowrap;
       transition: background 0.2s;
@@ -110,7 +110,7 @@
       width: 100%; max-width: 100%; height: 100%;
       overflow-y: auto; -webkit-overflow-scrolling: touch;
       display: flex; flex-direction: column; gap: 10px;
-      background: #ffffff; padding: 12px; box-sizing: border-box;
+      background: #ffffff; padding: 6px 12px 12px 12px; box-sizing: border-box;
     }
     .data-card { 
       display: flex; border-radius: 8px; overflow: hidden; 
@@ -863,79 +863,115 @@
     let blockClick = false;
 
     function toggleSidebar() {
-      if (blockClick) return;    
+      if (blockClick) return;
       const sidebar = document.getElementById('sidebarWrapper');
       const icon = document.getElementById('toggleIcon');
       const isClosing = !sidebar.classList.contains('closed');
       
       if (isClosing) {
         sidebar.classList.add('closed');
-        icon.innerText = '▶';    
+        icon.innerText = '▶';
         setTimeout(() => {
           if (sidebar.classList.contains('closed')) {
             sidebar.style.height = '';
+            sidebar.style.width = '';
           }
         }, 300);
       } else {
         sidebar.style.height = '';
+        sidebar.style.width = '';
         sidebar.classList.remove('closed');
         icon.innerText = '◀';
       }
     }
-    
+
     document.addEventListener('DOMContentLoaded', () => {
       const toggleBtn = document.querySelector('.sidebar-toggle');
       const sidebar = document.getElementById('sidebarWrapper');
       const icon = document.getElementById('toggleIcon');
       
+      let startX = 0;
       let startY = 0;
+      let startWidth = 0;
       let startHeight = 0;
       let isClosedStart = false;
 
-      toggleBtn.addEventListener('touchstart', (e) => {
-        if (window.innerWidth > 768) return;        
-        startY = e.touches[0].clientY;
+      function handleStart(clientX, clientY) {
+        startX = clientX;
+        startY = clientY;
         isDragging = false;
         blockClick = false;
         isClosedStart = sidebar.classList.contains('closed');
         
-        if (isClosedStart) {
-          startHeight = 0;
-        } else {
-          startHeight = sidebar.getBoundingClientRect().height;
-        }  
-        sidebar.style.transition = 'none'; 
-      }, { passive: true });
+        const rect = sidebar.getBoundingClientRect();
+        startWidth = isClosedStart ? 0 : rect.width;
+        startHeight = isClosedStart ? 0 : rect.height;       
+        sidebar.style.transition = 'none';
+      }
 
-      toggleBtn.addEventListener('touchmove', (e) => {
-        if (window.innerWidth > 768) return;     
-        const currentY = e.touches[0].clientY;
-        const deltaY = startY - currentY;
-        
-        if (Math.abs(deltaY) > 5) {
+      function handleMove(clientX, clientY, e) {
+        const deltaX = clientX - startX;
+        const deltaY = startY - clientY;
+        const isMobile = window.innerWidth <= 768;
+        const delta = isMobile ? deltaY : deltaX;
+
+        if (Math.abs(delta) > 5) {
           isDragging = true;
-          blockClick = true; 
-          e.preventDefault();
-          
+          blockClick = true;
+          if (e && e.cancelable) e.preventDefault();
           if (isClosedStart) {
             sidebar.classList.remove('closed');
             icon.innerText = '◀';
           }
-          
-          let newHeight = startHeight + deltaY;
-          const maxHeight = window.innerHeight * 0.85;
-          const minHeight = 80;
-          if (newHeight > maxHeight) newHeight = maxHeight;
-          if (newHeight < minHeight) newHeight = minHeight;
-          sidebar.style.height = `${newHeight}px`;
-        }
-      }, { passive: false });
 
-      toggleBtn.addEventListener('touchend', () => {
-        if (window.innerWidth > 768) return;
-        sidebar.style.transition = ''; 
+          if (isMobile) {
+            let newHeight = startHeight + deltaY;
+            const maxHeight = window.innerHeight * 0.85;
+            const minHeight = 80;       
+            if (newHeight > maxHeight) newHeight = maxHeight;
+            if (newHeight < minHeight) newHeight = minHeight;       
+            sidebar.style.height = `${newHeight}px`;
+            
+          } else {
+            let newWidth = startWidth + deltaX;
+            const maxWidth = window.innerWidth * 0.35;
+            const minWidth = 180;    
+            if (newWidth > maxWidth) newWidth = maxWidth;
+            if (newWidth < minWidth) newWidth = minWidth;       
+            sidebar.style.width = `${newWidth}px`;
+          }
+        }
+      }
+
+      function handleEnd() {
+        sidebar.style.transition = '';
         if (isDragging) {
           setTimeout(() => { blockClick = false; }, 100);
+        }
+      }
+
+      toggleBtn.addEventListener('touchstart', (e) => {
+        handleStart(e.touches[0].clientX, e.touches[0].clientY);
+      }, { passive: true });
+      toggleBtn.addEventListener('touchmove', (e) => {
+        handleMove(e.touches[0].clientX, e.touches[0].clientY, e);
+      }, { passive: false });
+      toggleBtn.addEventListener('touchend', handleEnd);
+
+      let isMouseDown = false;
+      toggleBtn.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return; // 左クリックのみ
+        isMouseDown = true;
+        handleStart(e.clientX, e.clientY);
+      });
+      window.addEventListener('mousemove', (e) => {
+        if (!isMouseDown) return;
+        handleMove(e.clientX, e.clientY, e);
+      });
+      window.addEventListener('mouseup', () => {
+        if (isMouseDown) {
+          isMouseDown = false;
+          handleEnd();
         }
       });
     });
