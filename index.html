@@ -708,7 +708,7 @@
 
       for (let i = currentDisplayCount; i < end; i++) {
         const row = currentFilteredData[i];
-        const imgUrl = row['画像'] ? row['画像'].toString() : 'https://placehold.co/120x120?text=No+Image';
+        const imgUrl = row['画像'] ? 'https://images.weserv.nl/?url=' + encodeURIComponent(row['画像']) : 'https://placehold.co/120x120?text=No+Image';
 
         const card = document.createElement('div');
         card.className = 'data-card';
