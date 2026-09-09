@@ -10,6 +10,7 @@
   </script>
   <base target="_top">
   <meta charset="UTF-8">
+  <meta name="theme-color" content="#111111">
   <meta name="referrer" content="no-referrer">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="google-site-verification" content="Q55XdGfgCRa8f_CpTHVnWHHRnz0POVzW-UhfwbEUPR0" />
@@ -149,7 +150,7 @@
     }
     .modal-overlay.show { display: flex; }
     .modal-content {
-      background: #fff; width: 100%; max-width: 600px;
+      background: #fff; width: 100%; max-width: 900px;
       max-height: 94dvh; border-radius: 12px; display: flex;
       flex-direction: column; overflow: hidden;
     }
@@ -159,9 +160,11 @@
       background: #eef2f5; flex-shrink: 0;
     }
     .modal-close { font-size: 28px; cursor: pointer; color: #7f8c8d; line-height: 1; }
-    
-    /* 中身だけがスクロールする設定 */
-    .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+    .modal-body { padding: 20px 10px 20px 20px; overflow: hidden; flex: 1; flex-direction: column; }
+    .modal-body-container { display: flex; gap: 20px; height: 100%; overflow: hidden; width: 100%; }
+    /* 列ごとに独立してスクロールさせる */
+    .modal-col-left, .modal-col-right { flex: 1; overflow-y: auto; padding-right: 10px; -webkit-overflow-scrolling: touch; }
+    .modal-col-right { border-left: 1px solid #f0f0f0; padding-left: 10px; }
     
     .form-group { margin-bottom: 15px; }
     .form-group label { display: block; font-weight: bold; font-size: 14px; margin-bottom: 5px; color: #34495e; }
@@ -183,23 +186,20 @@
     .card-content img { width: 100%; height: 50px; object-fit: contain; margin-bottom: 5px; }
     .card-content span { font-size: 12px; font-weight: bold; color: #2c3e50; margin-top: auto; }
     /* チェックされた時の見た目 */
-    .feature-card input[type="checkbox"]:checked + .card-content {
-      border-color: #3498db; background: #ebf5fb; color: #3498db;
-    }
-    .card-content.is-active {
-      border-color: #3498db; background: #ebf5fb; color: #3498db;
-    }
+    .feature-card input[type="checkbox"]:checked + .card-content { border-color: #3498db; background: #ebf5fb; color: #3498db; }
+    .card-content.is-active { border-color: #3498db; background: #ebf5fb; color: #3498db; }
     .modal-footer {
-      padding: 15px 20px; border-top: 1px solid #ddd; background: #fff; flex-shrink: 0; text-align: right;
+      padding: 15px 20px; border-top: 1px solid #ddd; background: #fff; flex-shrink: 0;
+      display: flex; justify-content: space-between; align-items: center; gap: 10px;
     }
     .clear-btn {
       background: #bdc3c7; color: #2c3e50; border: none; padding: 12px 20px; font-size: 16px; font-weight: bold;
-      border-radius: 8px; cursor: pointer; flex: 1; transition: background 0.2s;
+      border-radius: 8px; cursor: pointer; flex: 1; transition: background 0.2s; white-space: nowrap;
     }
     .clear-btn:hover { background: #b2bec3; }
     .apply-btn {
       background: #3498db; color: white; border: none; padding: 12px 30px; font-size: 16px; font-weight: bold;
-      border-radius: 8px; cursor: pointer; flex: 1; transition: background 0.2s;
+      border-radius: 8px; cursor: pointer; flex: 1; transition: background 0.2s; white-space: nowrap;
     }
     .apply-btn:hover { background: #2980b9; }
 
@@ -277,7 +277,7 @@
     
     @media screen and (max-width: 768px) {
       body { height: 100dvh; min-height: 0; overflow: hidden; margin: 0; padding: 0; display: flex; flex-direction: column; }
-      body .custom-header { padding: 4px 10px; }
+      body .custom-header { padding: 6px 10px 6px 10px; padding-top: calc(6px + env(safe-area-inset-top)); }
       body .header-container { display: flex; justify-content: space-between; align-items: center; }
       body .header-title { font-size: 18px; }
       body .header-nav { gap: 10px; }
@@ -303,8 +303,10 @@
       }
       .sidebar-toggle #toggleIcon { display: inline-block; transform: rotate(90deg); }
       #advancedSearchBtn { width: auto; padding: 0 12px; height: 100%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; box-sizing: border-box; margin: 0; }
-      .modal-content { width: 100%; height: 94dvh; }
-      .checkbox-grid { grid-template-columns: repeat(3, 1fr); }
+      body .modal-body-container { flex-direction: column; overflow-y: auto; height: auto; }
+      body .modal-col-left, body .modal-col-right { overflow-y: visible; padding: 0; border: none; }
+      body .modal-body { overflow-y: auto; display: block; padding: 15px; }
+      body .checkbox-grid { grid-template-columns: repeat(3, 1fr); }
       input[type="text"],select { font-size: 16px !important; }
     }
   </style>
@@ -354,93 +356,99 @@
       </div>
       
       <div class="modal-body">
-        
-        <div class="form-row-2col">
-          <div class="form-group">
-            <label>都道府県</label>
-            <select id="advPrefecture">
-              <option value="">すべて</option>
-              <option value="埼玉県">埼玉県</option><option value="千葉県">千葉県</option><option value="東京都">東京都</option><option value="神奈川県">神奈川県</option>
-              <option value="石川県">石川県</option><option value="山梨県">山梨県</option><option value="岐阜県">岐阜県</option><option value="静岡県">静岡県</option>
-              <option value="京都府">京都府</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>道路種別</label>
-            <select id="advRoadType">
-              <option value="">すべて</option>
-              <option value="国道">国道</option>
-              <option value="県道">都道府県道</option>
-              <option value="その他">その他</option>
-            </select>
-          </div>
-          <div class="form-group" style="flex: 1;">
-            <label>道路名</label>
-            <div style="display: flex; align-items: center; gap: 5px;">
-              <input type="text" id="advRoadNameInput" placeholder="例: 1" style="flex: 1;">
-              <span style="font-weight: bold; white-space: nowrap; margin-top: 2px; font-size: 0.85em; color: #34495e;">（号）</span>
+        <div class="modal-body-container">
+          <div class="modal-col-left">
+            <div class="form-row-2col">
+              <div class="form-group">
+                <label>都道府県</label>
+                <select id="advPrefecture">
+                  <option value="">すべて</option>
+                  <option value="埼玉県">埼玉県</option><option value="千葉県">千葉県</option><option value="東京都">東京都</option><option value="神奈川県">神奈川県</option>
+                  <option value="石川県">石川県</option><option value="山梨県">山梨県</option><option value="岐阜県">岐阜県</option><option value="静岡県">静岡県</option>
+                  <option value="京都府">京都府</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>道路種別</label>
+                <select id="advRoadType">
+                  <option value="">すべて</option>
+                  <option value="国道">国道</option>
+                  <option value="県道">都道府県道</option>
+                  <option value="その他">その他</option>
+                </select>
+              </div>
+              <div class="form-group" style="flex: 1;">
+                <label>道路名</label>
+                <div style="display: flex; align-items: center; gap: 5px;">
+                  <input type="text" id="advRoadNameInput" placeholder="例: 1" style="flex: 1;">
+                  <span style="font-weight: bold; white-space: nowrap; margin-top: 2px; font-size: 0.85em; color: #34495e;">（号）</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>住所</label>
+              <input type="text" id="advAddress" placeholder="住所の一部か全部を入力">
+            </div>
+            
+            <div class="form-group">
+              <label>交差路線</label>
+              <input type="text" id="advCrossRoad" placeholder="例: 国道1号,日比谷通り">
+            </div>
+            
+            <div class="form-group">
+              <label>高速道路案内</label>
+              <input type="text" id="advHighway" placeholder="ﾅﾝﾊﾞﾘﾝｸﾞや道路名を入力（例: E1,東名高速）">
             </div>
           </div>
-        </div>
-
-        <div class="form-group">
-          <label>住所</label>
-          <input type="text" id="advAddress" placeholder="住所の一部か全部を入力">
-        </div>
-
-        <div class="form-group">
-          <label>交差路線</label>
-          <input type="text" id="advCrossRoad" placeholder="例: 国道1号,日比谷通り">
-        </div>
-        
-        <div class="form-group">
-          <label>高速道路案内</label>
-          <input type="text" id="advHighway" placeholder="ﾅﾝﾊﾞﾘﾝｸﾞや道路名を入力（例: E1,東名高速）">
-        </div>
-
-        <div class="form-group">
-          <label style="margin-bottom: 5px;">特徴</label>
           
-          <div class="feature-section-title">《形状》</div>
-          <div class="checkbox-grid">
-            <div class="feature-card"><input type="checkbox" name="advFeature" value="分割"><div class="card-content"><img src="img/shape1.jpg" alt="画像" onerror="this.style.display='none'"><span>車線別</span></div></div>
-            <div class="feature-card"><input type="checkbox" name="advFeature" value="シンボル"><div class="card-content"><img src="img/symbol.jpg" alt="画像" onerror="this.style.display='none'"><span>シンボル</span></div></div>
-            <div class="feature-card"><input type="checkbox" name="advFeature" value="電光"><div class="card-content"><img src="img/shape3.jpg" alt="画像" onerror="this.style.display='none'"><span>電光</span></div></div>
-            <div class="feature-card"><input type="checkbox" name="advFeature" value="車高"><div class="card-content"><img src="img/height.png" alt="画像" onerror="this.style.display='none'"><span>車高制限</span></div></div>
-            <div class="feature-card"><input type="checkbox" name="advFeature" value="車種"><div class="card-content"><img src="img/type.png" alt="画像" onerror="this.style.display='none'"><span>車種制限</span></div></div>
-            <div class="feature-card"><input type="checkbox" name="advFeature" value="禁止"><div class="card-content"><img src="img/keepout.png" alt="画像" onerror="this.style.display='none'"><span>進入禁止</span></div></div>
-            <div class="feature-card"><input type="checkbox" name="advFeature" value="標識"><div class="card-content"><img src="img/elsemark.png" alt="画像" onerror="this.style.display='none'"><span>他標識</span></div></div>
-            <div class="feature-card"><input type="checkbox" name="advFeature" value="信号"><div class="card-content"><img src="img/signal.png" alt="画像" onerror="this.style.display='none'"><span>信号</span></div></div>
-            <div class="feature-card"><input type="checkbox" name="advFeature" value="駅"><div class="card-content"><img src="img/station.png" alt="画像" onerror="this.style.display='none'"><span>駅</span></div></div>
-            <div class="feature-card"><input type="checkbox" name="advFeature" value="修正"><div class="card-content"><img src="img/revison.png" alt="画像" onerror="this.style.display='none'"><span>修正跡</span></div></div>
-            <div class="feature-card"><input type="checkbox" name="advFeature" value="ツートン"><div class="card-content"><img src="img/two-tone.png" alt="画像" onerror="this.style.display='none'"><span>ツートン</span></div></div>
-            <div class="feature-card"><input type="checkbox" name="advFeature" value="角丸"><div class="card-content"><img src="img/rounded_corners.png" alt="画像" onerror="this.style.display='none'"><span>角丸</span></div></div>
+          <div class="modal-col-right">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="margin-bottom: 5px;">特徴</label>
+              
+              <div class="feature-section-title">《形状》</div>
+              <div class="checkbox-grid">
+                <div class="feature-card"><input type="checkbox" name="advFeature" value="分割"><div class="card-content"><img src="img/shape1.jpg" alt="画像" onerror="this.style.display='none'"><span>車線別</span></div></div>
+                <div class="feature-card"><input type="checkbox" name="advFeature" value="シンボル"><div class="card-content"><img src="img/symbol.jpg" alt="画像" onerror="this.style.display='none'"><span>シンボル</span></div></div>
+                <div class="feature-card"><input type="checkbox" name="advFeature" value="電光"><div class="card-content"><img src="img/shape3.jpg" alt="画像" onerror="this.style.display='none'"><span>電光</span></div></div>
+                <div class="feature-card"><input type="checkbox" name="advFeature" value="車高"><div class="card-content"><img src="img/height.png" alt="画像" onerror="this.style.display='none'"><span>車高制限</span></div></div>
+                <div class="feature-card"><input type="checkbox" name="advFeature" value="車種"><div class="card-content"><img src="img/type.png" alt="画像" onerror="this.style.display='none'"><span>車種制限</span></div></div>
+                <div class="feature-card"><input type="checkbox" name="advFeature" value="禁止"><div class="card-content"><img src="img/keepout.png" alt="画像" onerror="this.style.display='none'"><span>進入禁止</span></div></div>
+                <div class="feature-card"><input type="checkbox" name="advFeature" value="標識"><div class="card-content"><img src="img/elsemark.png" alt="画像" onerror="this.style.display='none'"><span>他標識</span></div></div>
+                <div class="feature-card"><input type="checkbox" name="advFeature" value="信号"><div class="card-content"><img src="img/signal.png" alt="画像" onerror="this.style.display='none'"><span>信号</span></div></div>
+                <div class="feature-card"><input type="checkbox" name="advFeature" value="駅"><div class="card-content"><img src="img/station.png" alt="画像" onerror="this.style.display='none'"><span>駅</span></div></div>
+                <div class="feature-card"><input type="checkbox" name="advFeature" value="修正"><div class="card-content"><img src="img/revison.png" alt="画像" onerror="this.style.display='none'"><span>修正跡</span></div></div>
+                <div class="feature-card"><input type="checkbox" name="advFeature" value="ツートン"><div class="card-content"><img src="img/two-tone.png" alt="画像" onerror="this.style.display='none'"><span>ツートン</span></div></div>
+                <div class="feature-card"><input type="checkbox" name="advFeature" value="角丸"><div class="card-content"><img src="img/rounded_corners.png" alt="画像" onerror="this.style.display='none'"><span>角丸</span></div></div>
+              </div>
+              
+              <div class="feature-section-title">《概形》</div>
+              <div class="checkbox-grid">
+                <div class="feature-card"><input type="checkbox" name="advFeature" value="交差なし"><div class="card-content"><img src="img/crossimg_1.png" alt="画像" onerror="this.style.display='none'"><span>交差なし</span></div></div>
+                <div class="feature-card"><input type="checkbox" name="advFeature" value="T字路"><div class="card-content"><img src="img/crossimg_stp.png" alt="画像" onerror="this.style.display='none'"><span>T字路</span></div></div>
+                <div class="feature-card"><input type="checkbox" name="advFeature" value="2交差"><div class="card-content"><img src="img/crossimg_2.png" alt="画像" onerror="this.style.display='none'"><span>2交差</span></div></div>
+                <div class="feature-card"><input type="checkbox" name="advFeature" value="3交差以上"><div class="card-content"><img src="img/crossimg_3.png" alt="画像" onerror="this.style.display='none'"><span>3交差以上</span></div></div>
+                <div class="feature-card"><input type="checkbox" name="advFeature" value="カーブ"><div class="card-content"><img src="img/curve.png" alt="画像" onerror="this.style.display='none'"><span>カーブ</span></div></div>
+                <div class="feature-card"><input type="checkbox" name="advFeature" value="ランプ"><div class="card-content"><img src="img/ramp.png" alt="画像" onerror="this.style.display='none'"><span>ランプ</span></div></div>
+                <div class="feature-card"><input type="checkbox" name="advFeature" value="線路"><div class="card-content"><img src="img/rail.png" alt="画像" onerror="this.style.display='none'"><span>線路</span></div></div>
+                <div class="feature-card"><input type="checkbox" name="advFeature" value="橋梁"><div class="card-content"><img src="img/bridge.png" alt="画像" onerror="this.style.display='none'"><span>橋梁</span></div></div>
+                <div class="feature-card"><input type="checkbox" name="advFeature" value="連名"><div class="card-content"><img src="img/consecutive.png" alt="画像" onerror="this.style.display='none'"><span>連名</span></div></div>
+                <div class="feature-card"><input type="checkbox" name="advFeature" value="矢印なし"><div class="card-content"><img src="img/crossimg_x.png" alt="画像" onerror="this.style.display='none'"><span>矢印なし</span></div></div>
+              </div>
+              
+              <div class="feature-section-title">《字体》</div>
+              <div class="checkbox-grid">
+                <div class="feature-card"><input type="checkbox" name="advFeature" value="旧式"><div class="card-content"><img src="img/retro.jpg" alt="画像" onerror="this.style.display='none'"><span>旧式</span></div></div>
+                <div class="feature-card"><input type="checkbox" name="advFeature" value="公団"><div class="card-content"><img src="img/HighwayGothic.jpg" alt="画像" onerror="this.style.display='none'"><span>公団ｺﾞｼｯｸ</span></div></div>
+              </div>
+            </div>
           </div>
-
-          <div class="feature-section-title">《概形》</div>
-          <div class="checkbox-grid">
-            <div class="feature-card"><input type="checkbox" name="advFeature" value="交差なし"><div class="card-content"><img src="img/crossimg_1.png" alt="画像" onerror="this.style.display='none'"><span>交差なし</span></div></div>
-            <div class="feature-card"><input type="checkbox" name="advFeature" value="T字路"><div class="card-content"><img src="img/crossimg_stp.png" alt="画像" onerror="this.style.display='none'"><span>T字路</span></div></div>
-            <div class="feature-card"><input type="checkbox" name="advFeature" value="2交差"><div class="card-content"><img src="img/crossimg_2.png" alt="画像" onerror="this.style.display='none'"><span>2交差</span></div></div>
-            <div class="feature-card"><input type="checkbox" name="advFeature" value="3交差以上"><div class="card-content"><img src="img/crossimg_3.png" alt="画像" onerror="this.style.display='none'"><span>3交差以上</span></div></div>
-            <div class="feature-card"><input type="checkbox" name="advFeature" value="カーブ"><div class="card-content"><img src="img/curve.png" alt="画像" onerror="this.style.display='none'"><span>カーブ</span></div></div>
-            <div class="feature-card"><input type="checkbox" name="advFeature" value="ランプ"><div class="card-content"><img src="img/ramp.png" alt="画像" onerror="this.style.display='none'"><span>ランプ</span></div></div>
-            <div class="feature-card"><input type="checkbox" name="advFeature" value="線路"><div class="card-content"><img src="img/rail.png" alt="画像" onerror="this.style.display='none'"><span>線路</span></div></div>
-            <div class="feature-card"><input type="checkbox" name="advFeature" value="橋梁"><div class="card-content"><img src="img/bridge.png" alt="画像" onerror="this.style.display='none'"><span>橋梁</span></div></div>
-            <div class="feature-card"><input type="checkbox" name="advFeature" value="連名"><div class="card-content"><img src="img/consecutive.png" alt="画像" onerror="this.style.display='none'"><span>連名</span></div></div>
-            <div class="feature-card"><input type="checkbox" name="advFeature" value="矢印なし"><div class="card-content"><img src="img/crossimg_x.png" alt="画像" onerror="this.style.display='none'"><span>矢印なし</span></div></div>
-          </div>
-
-          <div class="feature-section-title">《字体》</div>
-          <div class="checkbox-grid">
-            <div class="feature-card"><input type="checkbox" name="advFeature" value="旧式"><div class="card-content"><img src="img/retro.jpg" alt="画像" onerror="this.style.display='none'"><span>旧式</span></div></div>
-            <div class="feature-card"><input type="checkbox" name="advFeature" value="公団"><div class="card-content"><img src="img/HighwayGothic.jpg" alt="画像" onerror="this.style.display='none'"><span>公団ｺﾞｼｯｸ</span></div></div>
-          </div>
+          
         </div>
       </div>
       
-      <div class="modal-footer" style="display: flex; flex-direction: column; gap: 15px;">
-        <div style="display: flex; justify-content: center; gap: 20px;">
+      <div class="modal-footer">
+        <div style="display: flex; gap: 15px; align-items: center;">
           <label style="cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 14px; font-weight: bold; color: #2c3e50;">
             <input type="radio" name="searchMode" value="AND" checked style="width: 16px; height: 16px;"> すべて含む (AND)
           </label>
@@ -448,7 +456,7 @@
             <input type="radio" name="searchMode" value="OR" style="width: 16px; height: 16px;"> いずれかを含む (OR)
           </label>
         </div>
-        <div style="display: flex; gap: 10px; width: 100%;">
+        <div style="display: flex; gap: 10px; align-items: center;">
           <button class="clear-btn" onclick="clearAdvancedSearch()">条件をクリア</button>
           <button class="apply-btn" onclick="applyAdvancedSearch()">適用</button>
         </div>
