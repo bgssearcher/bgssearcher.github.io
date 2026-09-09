@@ -209,8 +209,7 @@
       background-position: center;
       position: relative;
       color: white;
-      padding: 8px 20px;
-      padding-top: calc(8px + env(safe-area-inset-top));
+      padding: 6px 20px;
     }
     .custom-header::before {
       content: '';
@@ -277,7 +276,7 @@
     
     @media screen and (max-width: 768px) {
       body { height: 100dvh; min-height: 0; overflow: hidden; margin: 0; padding: 0; display: flex; flex-direction: column; }
-      body .custom-header { padding: 6px 10px 6px 10px; padding-top: calc(6px + env(safe-area-inset-top)); }
+      body .custom-header { padding: 4px 10px; }
       body .header-container { display: flex; justify-content: space-between; align-items: center; }
       body .header-title { font-size: 18px; }
       body .header-nav { gap: 10px; }
