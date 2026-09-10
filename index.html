@@ -162,7 +162,6 @@
     .modal-close { font-size: 28px; cursor: pointer; color: #7f8c8d; line-height: 1; }
     .modal-body { padding: 20px 10px 20px 20px; overflow: hidden; flex: 1; display: flex; flex-direction: column; min-height: 0; }
     .modal-body-container { display: flex; gap: 20px; height: 100%; overflow: hidden; width: 100%; min-height: 0; }
-    /* 列ごとに独立してスクロールさせる */
     .modal-col-left, .modal-col-right { flex: 1; overflow-y: auto; padding-right: 10px; -webkit-overflow-scrolling: touch; }
     .modal-col-right { border-left: 1px solid #f0f0f0; padding-left: 10px; }
     
@@ -174,7 +173,6 @@
     .modal-body input[type="text"]:focus, 
     .modal-body select:focus { outline: none; border-color: #3498db; }
 
-    /* チェックボックス */
     .feature-section-title { font-size: 13px; color: #7f8c8d; margin: 10px 0 5px 0; }
     .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; margin-bottom: 10px; }
     .feature-card { cursor: pointer; display: block; position: relative; }
@@ -185,7 +183,6 @@
     }
     .card-content img { width: 100%; height: 50px; object-fit: contain; margin-bottom: 5px; }
     .card-content span { font-size: 12px; font-weight: bold; color: #2c3e50; margin-top: auto; }
-    /* チェックされた時の見た目 */
     .feature-card input[type="checkbox"]:checked + .card-content { border-color: #3498db; background: #ebf5fb; color: #3498db; }
     .card-content.is-active { border-color: #3498db; background: #ebf5fb; color: #3498db; }
     .modal-footer {
@@ -320,7 +317,7 @@
     <div class="header-container">
       <h1 class="header-title">青看板検索ツール</h1>
       <nav class="header-nav">
-        <a href="./">マップ検索</a>
+        <a href="#" onclick="showRandomSign(); return false;">ランダム表示</a>
         <a href="about.html">about</a>
       </nav>
     </div>
@@ -837,13 +834,12 @@
         }
       });
     }
-    // モーダルの制御
+    
     function openAdvancedSearch() {
       document.getElementById('advancedSearchModal').classList.add('show');
       syncCheckboxStyles();
     }
     function closeAdvancedSearch(e) {
-      // 背景クリックで閉じる処理
       if (e && e.target !== document.getElementById('advancedSearchModal') && !e.target.classList.contains('modal-close')) return;
       document.getElementById('advancedSearchModal').classList.remove('show');
     }
@@ -872,6 +868,28 @@
         syncCheckboxStyles();
       }
     });
+
+    function showRandomSign() {
+      if (!currentFilteredData || currentFilteredData.length === 0) {
+        return;
+      }
+      const randomIndex = Math.floor(Math.random() * currentFilteredData.length);
+      const sidebar = document.getElementById('sidebarWrapper');
+      if (sidebar && sidebar.classList.contains('closed')) {
+        toggleSidebar();
+      }
+      while (currentDisplayCount <= randomIndex && currentDisplayCount < currentFilteredData.length) {
+        renderListChunk();
+      }
+      const targetCard = document.getElementById('card-' + randomIndex);
+      if (targetCard) {
+        if (!targetCard.classList.contains('active')) {
+          targetCard.click();
+        } else {
+          targetCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }
+    }
     
     let isDragging = false;
     let blockClick = false;
