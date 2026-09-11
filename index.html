@@ -103,6 +103,9 @@
     }
     #advancedSearchBtn:hover { background: #dfe6e9; }
 
+    .result-count { text-align: right; padding: 2px 12px 2px 12px; font-size: 11px;
+                   line-height: 1.1; color: #666666; background: #ffffff; flex-shrink: 0; }
+
     .list-container {
       width: 100%; max-width: 100%; height: 100%;
       overflow-y: auto; -webkit-overflow-scrolling: touch;
@@ -279,6 +282,7 @@
       body .filter-select-wrapper { width: 100%; gap: 4px; }
       body .filter-select-wrapper select { flex: 1; width: 50%; padding: 6px 4px; font-size: 12px; height: auto; }
       body .content-wrapper { display: flex; flex-direction: column-reverse; flex: 1; min-height: 0; gap: 4px; margin: 0; width: auto; height: auto; max-height: none; }
+      body .result-count { padding: 1px 10px 1px 10px; font-size: 10px; }
       body .list-container { width: 100%; min-width: 100%; max-width: 100%; height: auto; max-height: none; flex: 1; min-height: 0;  padding: 0 0 16px 0; overflow-y: auto; }
       #map { width: 100%; height: 100%; }
       .sidebar-wrapper { width: 100%; height: 35vh; min-width: auto; top: auto; bottom: 0; left: 0;
@@ -329,6 +333,7 @@
               <span style="font-size: 15px; font-weight: bold;">詳細検索</span>
             </button>
           </div>
+          <div id="resultCount" class="result-count">読み込み中…</div>
           <div class="list-container" id="listContainer">
             <div class="no-data">読み込み中…</div>
           </div>
@@ -606,7 +611,6 @@
       const featureCheckboxes = document.querySelectorAll('input[name="advFeature"]:checked');
       const selectedFeatures = Array.from(featureCheckboxes).map(cb => cb.value);
 
-      // 選択されている検索モード（AND / OR）を取得
       const searchMode = document.querySelector('input[name="searchMode"]:checked')?.value || 'AND';
 
       const filtered = allData.filter(function(row) {
@@ -662,6 +666,15 @@
     function renderData(data) {
       currentFilteredData = data;
       currentDisplayCount = 0;
+
+      const countElement = document.getElementById('resultCount');
+      if (countElement) {
+        if (data && data.length > 0) {
+          countElement.innerHTML = `<b>${data.length}</b> / ${allData.length}件`;
+        } else {
+          countElement.innerHTML = `<b>0</b> / ${allData.length}件`;
+        }
+      }
       
       const listContainer = document.getElementById('listContainer');
       listContainer.innerHTML = '';
