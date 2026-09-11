@@ -70,14 +70,9 @@
     }
 
     .sidebar-wrapper {
-      position: absolute;
-      top: 0; left: 0; height: 100%;
-      width: 35%;
-      min-width: 320px;
-      z-index: 10;
-      display: flex;
-      transform: translateX(0);
-      transition: transform 0.3s ease;
+      position: absolute; top: 0; left: 0; height: 100%; width: 35%;
+      min-width: 320px; z-index: 10; display: flex; box-shadow: 3px 0 3px rgba(0,0,0,0.15);
+      transform: translateX(0); transition: transform 0.3s ease;
     }
     .sidebar-wrapper.closed {
       transform: translateX(-100%);
@@ -112,7 +107,7 @@
       width: 100%; max-width: 100%; height: 100%;
       overflow-y: auto; -webkit-overflow-scrolling: touch;
       display: flex; flex-direction: column; gap: 10px; background: #ffffff;
-      padding: 0 12px 12px 12px; box-sizing: border-box; box-shadow: 3px 0 3px rgba(0,0,0,0.15);
+      padding: 0 12px 12px 12px; box-sizing: border-box;
     }
     .data-card { 
       display: flex; border-radius: 8px; overflow: hidden; 
@@ -414,7 +409,6 @@
                 <div class="feature-card"><input type="checkbox" name="advFeature" value="3"><div class="card-content"><img src="img/direction3.png" alt="画像" onerror="this.style.display='none'"><span>3方向</span></div></div>
                 <div class="feature-card"><input type="checkbox" name="advFeature" value="4"><div class="card-content"><img src="img/direction4.png" alt="画像" onerror="this.style.display='none'"><span>4方向</span></div></div>
                 <div class="feature-card"><input type="checkbox" name="advFeature" value="5"><div class="card-content"><img src="img/direction5.png" alt="画像" onerror="this.style.display='none'"><span>5方向以上</span></div></div>
-                <div class="feature-card"><input type="checkbox" name="advFeature" value="距離"><div class="card-content"><img src="img/distance.jpg" alt="画像" onerror="this.style.display='none'"><span>距離</span></div></div>
                 <div class="feature-card"><input type="checkbox" name="advFeature" value="十字路"><div class="card-content"><img src="img/crossimg_2.png" alt="画像" onerror="this.style.display='none'"><span>十字路</span></div></div>
                 <div class="feature-card"><input type="checkbox" name="advFeature" value="丁字路"><div class="card-content"><img src="img/crossimg_stp.png" alt="画像" onerror="this.style.display='none'"><span>丁字路</span></div></div>
                 <div class="feature-card"><input type="checkbox" name="advFeature" value="カーブ"><div class="card-content"><img src="img/curve.png" alt="画像" onerror="this.style.display='none'"><span>カーブ</span></div></div>
@@ -428,6 +422,7 @@
               
               <div class="feature-section-title">《形状》</div>
               <div class="checkbox-grid">
+                <div class="feature-card"><input type="checkbox" name="advFeature" value="距離"><div class="card-content"><img src="img/distance.jpg" alt="画像" onerror="this.style.display='none'"><span>距離</span></div></div>
                 <div class="feature-card"><input type="checkbox" name="advFeature" value="分割"><div class="card-content"><img src="img/shape1.jpg" alt="画像" onerror="this.style.display='none'"><span>車線別</span></div></div>
                 <div class="feature-card"><input type="checkbox" name="advFeature" value="シンボル"><div class="card-content"><img src="img/symbol.jpg" alt="画像" onerror="this.style.display='none'"><span>シンボル</span></div></div>
                 <div class="feature-card"><input type="checkbox" name="advFeature" value="電光"><div class="card-content"><img src="img/shape3.jpg" alt="画像" onerror="this.style.display='none'"><span>電光</span></div></div>
