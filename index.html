@@ -1018,6 +1018,16 @@
       }
     }
     
+    document.addEventListener('click', function(event) {
+      const panel = document.getElementById('prefDropdownPanel');
+      const trigger = document.querySelector('.pref-dropdown-trigger');
+      if (panel && panel.classList.contains('show')) {
+        if (!trigger.contains(event.target) && !panel.contains(event.target)) {
+          panel.classList.remove('show');
+        }
+      }
+    });
+    
     let isDragging = false;
     let blockClick = false;
 
