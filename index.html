@@ -269,6 +269,20 @@
       background-color: #ffffff;
     }
     
+    .local-reset-btn { background: #ffffff; border: 1px solid #ccc; border-radius: 4px;　padding: 2px 8px; font-size: 12px; cursor: pointer; color: #555; }
+    .local-reset-btn:hover { background: #e0e0e0; }
+    .pref-dropdown-trigger { width: 100%; min-height: 38px; padding: 6px 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 15px; background-color: #ffffff;
+                            display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .pref-dropdown-panel { display: none; position: absolute; top: 100%; left: 0; width: 320px; max-width: 90vw; background: #fff; border: 1px solid #ddd; border-radius: 6px;
+                          box-shadow: none; z-index: 999; padding: 15px; box-sizing: border-box; max-height: 300px; overflow-y: auto; margin-top: 5px; }
+    .pref-dropdown-panel.show { display: block; }
+    .region-buttons { display: grid; grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); gap: 6px; }
+    .region-buttons button { background: #eef2f5; border: 1px solid #bdc3c7; border-radius: 4px; padding: 6px 4px; font-size: 12px; cursor: pointer; color: #2c3e50; }
+    .region-buttons button:hover { background: #dfe6e9; }
+    .pref-checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; }
+    .pref-checkbox-label { display: flex; align-items: center; gap: 5px; font-size: 14px; cursor: pointer; }
+    .pref-checkbox-label input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
+    
     @media screen and (max-width: 768px) {
       body { height: 100dvh; min-height: 0; overflow: hidden; margin: 0; padding: 0; display: flex; flex-direction: column; }
       body .custom-header { padding: 4px 10px; }
@@ -360,15 +374,43 @@
         <div class="modal-body-container">
           <div class="modal-col-left">
             <div class="form-row-2col">
-              <div class="form-group">
+              <div class="form-group" style="position: relative;">
                 <label>都道府県</label>
-                <select id="advPrefecture">
-                  <option value="">すべて</option>
-                  <option value="埼玉県">埼玉県</option><option value="千葉県">千葉県</option><option value="東京都">東京都</option><option value="神奈川県">神奈川県</option>
-                  <option value="石川県">石川県</option><option value="山梨県">山梨県</option><option value="岐阜県">岐阜県</option><option value="静岡県">静岡県</option>
-                  <option value="京都府">京都府</option>
-                </select>
+                <div class="pref-dropdown-trigger" onclick="togglePrefPanel()">
+                  <span id="prefSelectedLabel">すべて</span>
+                  <span class="dropdown-icon">▼</span>
+                </div>
+                <div id="prefDropdownPanel" class="pref-dropdown-panel">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <div class="feature-section-title" style="margin: 0;">《地方一括選択》</div>
+                    <button type="button" class="local-reset-btn" onclick="resetPrefectureFilter()">リセット</button>
+                  </div>
+                  
+                  <div class="region-buttons">
+                    <button type="button" onclick="selectRegion('関東')">関東</button>
+                    <button type="button" onclick="selectRegion('中部')">中部</button>
+                    <button type="button" onclick="selectRegion('近畿')">近畿</button>
+                  </div>
+                  <hr style="border: 0; border-top: 1px dashed #ddd; margin: 10px 0;">
+                  <label class="pref-checkbox-label" style="font-weight: bold; color: #3498db;">
+                    <input type="checkbox" id="prefAllCheckbox" checked onchange="togglePrefAll()"> すべて
+                  </label>
+                  
+                  <div class="feature-section-title">《都道府県》</div>
+                  <div class="pref-checkbox-grid">
+                    <label class="pref-checkbox-label"><input type="checkbox" name="advPrefBox" value="埼玉県" onchange="updatePrefSelection()"> 埼玉県</label>
+                    <label class="pref-checkbox-label"><input type="checkbox" name="advPrefBox" value="千葉県" onchange="updatePrefSelection()"> 千葉県</label>
+                    <label class="pref-checkbox-label"><input type="checkbox" name="advPrefBox" value="東京都" onchange="updatePrefSelection()"> 東京都</label>
+                    <label class="pref-checkbox-label"><input type="checkbox" name="advPrefBox" value="神奈川県" onchange="updatePrefSelection()"> 神奈川県</label>
+                    <label class="pref-checkbox-label"><input type="checkbox" name="advPrefBox" value="石川県" onchange="updatePrefSelection()"> 石川県</label>
+                    <label class="pref-checkbox-label"><input type="checkbox" name="advPrefBox" value="山梨県" onchange="updatePrefSelection()"> 山梨県</label>
+                    <label class="pref-checkbox-label"><input type="checkbox" name="advPrefBox" value="岐阜県" onchange="updatePrefSelection()"> 岐阜県</label>
+                    <label class="pref-checkbox-label"><input type="checkbox" name="advPrefBox" value="静岡県" onchange="updatePrefSelection()"> 静岡県</label>
+                    <label class="pref-checkbox-label"><input type="checkbox" name="advPrefBox" value="京都府" onchange="updatePrefSelection()"> 京都府</label>
+                  </div>
+                </div>
               </div>
+              
               <div class="form-group">
                 <label>道路種別</label>
                 <select id="advRoadType">
@@ -540,6 +582,74 @@
         }
       });
     }
+    
+    const REGION_MAP = {
+      "北海道東北": ["北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県"],
+      "関東": ["茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県"],
+      "中部": ["新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県", "静岡県", "愛知県"],
+      "近畿": ["三重県", "滋賀県", "京都府", "大阪府", "兵庫県", "奈良県", "和歌山県"],
+      "中国": ["鳥取県", "島根県", "岡山県", "広島県", "山口県"], "四国": ["徳島県", "香川県", "愛媛県", "高知県"],
+      "九州沖縄": ["福岡県", "佐賀県", "長崎県", "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"] };
+    
+    function togglePrefPanel() {
+      document.getElementById('prefDropdownPanel').classList.toggle('show');
+    }
+    function selectRegion(regionName) {
+      const prefs = REGION_MAP[regionName];
+      if (!prefs) return; 
+      const checkboxes = document.querySelectorAll('input[name="advPrefBox"]');
+      checkboxes.forEach(cb => {
+        if (prefs.indexOf(cb.value) !== -1) {
+          cb.checked = true;
+        }
+      });
+      document.getElementById('prefAllCheckbox').checked = false;
+      updatePrefLabel();
+    }
+    
+    function togglePrefAll() {
+      const isChecked = document.getElementById('prefAllCheckbox').checked;
+      if (isChecked) {
+        const checkboxes = document.querySelectorAll('input[name="advPrefBox"]');
+        checkboxes.forEach(cb => cb.checked = false)
+      }
+      updatePrefLabel();
+    }
+    
+    function updatePrefSelection() {
+      const checkboxes = document.querySelectorAll('input[name="advPrefBox"]');
+      const checkedAny = Array.from(checkboxes).some(cb => cb.checked);
+      if (checkedAny) {
+        // 何か1つでも選択されていれば「すべて」のチェックを外す
+        document.getElementById('prefAllCheckbox').checked = false;
+      } else {
+        // 1つも選択されていなければ「すべて」をチェックする
+        document.getElementById('prefAllCheckbox').checked = true;
+      }
+      updatePrefLabel();
+    }
+    
+    function updatePrefLabel() {
+      const labelEl = document.getElementById('prefSelectedLabel');
+      const isAll = document.getElementById('prefAllCheckbox').checked;
+      if (isAll) {
+        labelEl.innerText = "すべて";
+      } else {
+        const checkedBoxes = document.querySelectorAll('input[name="advPrefBox"]:checked');
+        if (checkedBoxes.length === 1) {
+          labelEl.innerText = checkedBoxes[0].value; // 1つの時は県名
+        } else {
+          labelEl.innerText = `${checkedBoxes.length}都道府県を選択中`; // 複数の時は件数
+        }
+      }
+    }
+    
+    function resetPrefectureFilter() {
+      const checkboxes = document.querySelectorAll('input[name="advPrefBox"]');
+      checkboxes.forEach(cb => cb.checked = false);
+      document.getElementById('prefAllCheckbox').checked = true;
+      updatePrefLabel();
+    }
 
     window.onload = async function() {
       initMap();
@@ -597,7 +707,8 @@
       const keyword = (document.getElementById('searchInput')?.value || '');
       const searchWords = keyword.trim() ? keyword.toLowerCase().split(/[\s,、]+/) : [];
 
-      const prefecture = document.getElementById('advPrefecture')?.value || '';
+      const isPrefAll = document.getElementById('prefAllCheckbox')?.checked || false;
+      const selectedPrefs = Array.from(document.querySelectorAll('input[name="advPrefBox"]:checked')).map(cb => cb.value);
       const roadType = document.getElementById('advRoadType')?.value || '';
       const roadNameRaw = document.getElementById('advRoadNameInput')?.value || '';
       const roadNameWords = roadNameRaw.trim() ? roadNameRaw.toLowerCase().split(/[\s,、]+/) : [];
@@ -620,8 +731,8 @@
           const desc = (row['地名'] || '').toString().toLowerCase();
           conditions.push(searchWords.every(word => desc.indexOf(word) !== -1));
         }
-        if (prefecture) {
-          conditions.push((row['都道府県'] || '') === prefecture);
+        if (!isPrefAll && selectedPrefs.length > 0) {
+          conditions.push(selectedPrefs.indexOf(row['都道府県'] || '') !== -1);
         }
         if (roadType) {
           conditions.push((row['道路種別'] || '') === roadType);
@@ -859,6 +970,7 @@
       document.getElementById('advancedSearchModal').classList.remove('show');
     }
     function clearAdvancedSearch() {
+      resetPrefectureFilter();
       if (document.getElementById('advPrefecture')) document.getElementById('advPrefecture').value = '';
       if (document.getElementById('advRoadType')) document.getElementById('advRoadType').value = '';
       if (document.getElementById('advRoadNameInput')) document.getElementById('advRoadNameInput').value = '';
@@ -905,6 +1017,16 @@
         }
       }
     }
+    
+    document.addEventListener('click', function(event) {
+      const panel = document.getElementById('prefDropdownPanel');
+      const trigger = document.querySelector('.pref-dropdown-trigger');
+      if (panel && panel.classList.contains('show')) {
+        if (!trigger.contains(event.target) && !panel.contains(event.target)) {
+          panel.classList.remove('show');
+        }
+      }
+    }, true);
     
     let isDragging = false;
     let blockClick = false;
