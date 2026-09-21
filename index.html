@@ -530,6 +530,13 @@
     function initMap() {
       map = L.map('map', { zooming: true, touchZoom: true, zoomControl: false }).setView([35.6812, 139.7671], 10);
       L.control.zoom({ position: 'topright' }).addTo(map);
+      
+      const isMobile = window.innerWidth <= 768;
+      L.control.scale({
+        imperial: false,
+        position: isMobile ? 'topleft' : 'bottomright' // スマホなら左上、それ以外は右下
+      }).addTo(map);
+      
       L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png', {
         maxZoom: 18,
         attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">国土地理院</a>'
@@ -845,7 +852,9 @@
 
       for (let i = currentDisplayCount; i < end; i++) {
         const row = currentFilteredData[i];
-        const imgUrl = row['画像'] ? row['画像'] : 'https://placehold.co/120x120?text=No+Image';
+        const imgUrl = row['IMGcode'] 
+          ? 'https://sesso-richu.github.io/img/' + row['IMGcode'] + '.jpg' 
+          : 'https://placehold.co/120x120?text=No+Image';
 
         const card = document.createElement('div');
         card.className = 'data-card';
