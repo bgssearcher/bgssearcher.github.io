@@ -29,7 +29,10 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <link rel="preconnect" href="https://cyberjapandata.gsi.go.jp">
+  <link rel="preconnect" href="https://sesso-richu.github.io">
   <link rel="canonical" href="https://aokanban.com">
   <link rel="icon" href="./img/favicon.ico" type="image/x-icon">
   <link rel="apple-touch-icon" href="./img/favicon.png">
@@ -855,6 +858,9 @@
         const imgUrl = row['IMGcode'] 
           ? 'https://sesso-richu.github.io/bgs_images/folder/' + row['IMGcode'] + '.jpg' 
           : 'https://placehold.co/120x120?text=No+Image';
+        const viewImgUrl = row['IMGcode'] 
+          ? 'https://sesso-richu.github.io/bgs_images/view/' + row['IMGcode'] + '_view.jpg' 
+          : 'https://placehold.co/120x120?text=No+Image';
 
         const card = document.createElement('div');
         card.className = 'data-card';
@@ -864,7 +870,7 @@
         img.className = 'card-img';
         img.src = imgUrl;
         img.onerror = function() { this.src = 'https://placehold.co/120x120?text=Error'; };
-        img.onclick = function(e) { openViewer(imgUrl); e.stopPropagation(); };
+        img.onclick = function(e) { openViewer(viewImgUrl); e.stopPropagation(); };
         card.appendChild(img);
        
         const info = document.createElement('div');
