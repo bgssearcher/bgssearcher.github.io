@@ -29,7 +29,6 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <link rel="preconnect" href="https://cyberjapandata.gsi.go.jp">
   <link rel="preconnect" href="https://sesso-richu.github.io">
@@ -272,7 +271,7 @@
       background-color: #ffffff;
     }
     
-    .local-reset-btn { background: #ffffff; border: 1px solid #ccc; border-radius: 4px;　padding: 2px 8px; font-size: 12px; cursor: pointer; color: #555; }
+    .local-reset-btn { background: #ffffff; border: 1px solid #ccc; border-radius: 4px; padding: 2px 8px; font-size: 12px; cursor: pointer; color: #555; }
     .local-reset-btn:hover { background: #e0e0e0; }
     .pref-dropdown-trigger { width: 100%; min-height: 38px; padding: 6px 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 15px; background-color: #ffffff;
                             display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
@@ -483,7 +482,7 @@
                 <div class="feature-card"><input type="checkbox" name="advFeature" value="標識"><div class="card-content"><img src="img/elsemark.svg" alt="画像" onerror="this.style.display='none'"><span>他標識</span></div></div>
                 <div class="feature-card"><input type="checkbox" name="advFeature" value="信号"><div class="card-content"><img src="img/signal.svg" alt="画像" onerror="this.style.display='none'"><span>信号</span></div></div>
                 <div class="feature-card"><input type="checkbox" name="advFeature" value="駅"><div class="card-content"><img src="img/station.svg" alt="画像" onerror="this.style.display='none'"><span>駅</span></div></div>
-                <div class="feature-card"><input type="checkbox" name="advFeature" value="修正"><div class="card-content"><img src="img/revison.svg" alt="画像" onerror="this.style.display='none'"><span>修正跡</span></div></div>
+                <div class="feature-card"><input type="checkbox" name="advFeature" value="修正"><div class="card-content"><img src="img/revision.svg" alt="画像" onerror="this.style.display='none'"><span>修正跡</span></div></div>
                 <div class="feature-card"><input type="checkbox" name="advFeature" value="ツートン"><div class="card-content"><img src="img/two-tone.svg" alt="画像" onerror="this.style.display='none'"><span>ツートン</span></div></div>
                 <div class="feature-card"><input type="checkbox" name="advFeature" value="角丸"><div class="card-content"><img src="img/rounded_corners.svg" alt="画像" onerror="this.style.display='none'"><span>角丸</span></div></div>
                 <div class="feature-card"><input type="checkbox" name="advFeature" value="矢印外"><div class="card-content"><img src="img/outsign.jpg" alt="画像" onerror="this.style.display='none'"><span>矢印外標識</span></div></div>
@@ -813,8 +812,6 @@
       currentFilteredData.forEach(function(row, index) {
         if (!row['lat'] || !row['lng']) return;
         
-        const defaultIcon = L.divIcon({ className: 'custom-square-marker', iconSize: [12, 12], iconAnchor: [6, 6] });
-        const selectedIcon = L.divIcon({ className: 'custom-square-marker selected', iconSize: [12, 12], iconAnchor: [6, 6] });
         const marker = L.marker([row['lat'], row['lng']], { icon: defaultIcon });
         row._marker = marker;
 
