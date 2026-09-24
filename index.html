@@ -660,6 +660,79 @@
       document.getElementById('prefAllCheckbox').checked = true;
       updatePrefLabel();
     }
+    
+    function loadParamsFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      if (!params.toString()) return;
+      if (params.has('q')) { const el = document.getElementById('searchInput'); if (el) el.value = params.get('q'); }
+      if (params.has('pref')) {
+        const prefs = params.get('pref').split(',');
+        const checkboxes = document.querySelectorAll('input[name="advPrefBox"]');
+        let checkedAny = false;
+        checkboxes.forEach(cb => {
+          if (prefs.includes(cb.value)) {
+            cb.checked = true;
+            checkedAny = true;
+          } else {
+            cb.checked = false;
+          }
+        });
+        const prefAll = document.getElementById('prefAllCheckbox');
+        if (prefAll) prefAll.checked = !checkedAny;
+        updatePrefLabel();
+      }
+      
+      if (params.has('type')) { const el = document.getElementById('advRoadType'); if (el) el.value = params.get('type'); }
+      if (params.has('road')) { const el = document.getElementById('advRoadNameInput'); if (el) el.value = params.get('road'); }
+      if (params.has('addr')) { const el = document.getElementById('advAddress'); if (el) el.value = params.get('addr'); }
+      if (params.has('cross')) { const el = document.getElementById('advCrossRoad'); if (el) el.value = params.get('cross'); }
+      if (params.has('hwy')) { const el = document.getElementById('advHighway'); if (el) el.value = params.get('hwy'); }
+      
+      if (params.has('feat')) {
+        const feats = params.get('feat').split(',');
+        const checkboxes = document.querySelectorAll('input[name="advFeature"]');
+        checkboxes.forEach(cb => {
+          cb.checked = feats.includes(cb.value);
+        });
+        syncCheckboxStyles();
+      }
+      
+      if (params.has('mode')) {
+        const modeVal = params.get('mode');
+        const radio = document.querySelector(`input[name="searchMode"][value="${modeVal}"]`);
+        if (radio) radio.checked = true;
+      }
+    }
+    
+    function updateURLParams() {
+      const params = new URLSearchParams();
+      const keyword = (document.getElementById('searchInput')?.value || '').trim();
+      if (keyword) params.set('q', keyword);
+      const isPrefAll = document.getElementById('prefAllCheckbox')?.checked || false;
+      if (!isPrefAll) {
+        const selectedPrefs = Array.from(document.querySelectorAll('input[name="advPrefBox"]:checked')).map(cb => cb.value);
+        if (selectedPrefs.length > 0) {
+          params.set('pref', selectedPrefs.join(','));
+        }
+      }   
+      const roadType = document.getElementById('advRoadType')?.value || '';
+      if (roadType) params.set('type', roadType);
+      const roadName = (document.getElementById('advRoadNameInput')?.value || '').trim();
+      if (roadName) params.set('road', roadName);
+      const address = (document.getElementById('advAddress')?.value || '').trim();
+      if (address) params.set('addr', address);
+      const crossRoad = (document.getElementById('advCrossRoad')?.value || '').trim();
+      if (crossRoad) params.set('cross', crossRoad);
+      const highway = (document.getElementById('advHighway')?.value || '').trim();
+      if (highway) params.set('hwy', highway);
+      const selectedFeatures = Array.from(document.querySelectorAll('input[name="advFeature"]:checked')).map(cb => cb.value);
+      if (selectedFeatures.length > 0) { params.set('feat', selectedFeatures.join(',')); }
+      const searchMode = document.querySelector('input[name="searchMode"]:checked')?.value || 'AND';
+      if (searchMode === 'OR') { params.set('mode', 'OR'); }
+      const queryString = params.toString();
+      const newURL = window.location.pathname + (queryString ? '?' + queryString : '');
+      history.replaceState(null, '', newURL);
+    }
 
     window.onload = async function() {
       initMap();
@@ -698,6 +771,7 @@
         if (formattedData.length === 0) throw new Error('表示できるデータが0件です');
 
         allData = formattedData;
+        loadParamsFromURL();
         filterData();
 
       } catch (err) {
@@ -714,6 +788,9 @@
     });
 
     function filterData() {
+      
+      updateURLParams();
+      
       const keyword = (document.getElementById('searchInput')?.value || '');
       const searchWords = keyword.trim() ? keyword.toLowerCase().split(/[\s,、]+/) : [];
 
