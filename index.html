@@ -387,12 +387,13 @@
                     <div class="feature-section-title" style="margin: 0;">《地方一括選択》</div>
                     <button type="button" class="local-reset-btn" onclick="resetPrefectureFilter()">リセット</button>
                   </div>
-                  
-                  <div class="region-buttons">
-                    <button type="button" onclick="selectRegion('関東')">関東</button>
-                    <button type="button" onclick="selectRegion('中部')">中部</button>
-                    <button type="button" onclick="selectRegion('近畿')">近畿</button>
+
+                  <div class="pref-checkbox-grid">
+                    <label class="pref-checkbox-label"><input type="checkbox" name="advRegionBox" value="関東" onchange="toggleRegion(this)"> 関東</label>
+                    <label class="pref-checkbox-label"><input type="checkbox" name="advRegionBox" value="中部" onchange="toggleRegion(this)"> 中部</label>
+                    <label class="pref-checkbox-label"><input type="checkbox" name="advRegionBox" value="近畿" onchange="toggleRegion(this)"> 近畿</label>
                   </div>
+                  
                   <hr style="border: 0; border-top: 1px dashed #ddd; margin: 10px 0;">
                   <label class="pref-checkbox-label" style="font-weight: bold; color: #3498db;">
                     <input type="checkbox" id="prefAllCheckbox" checked onchange="togglePrefAll()"> すべて
@@ -604,22 +605,41 @@
     function togglePrefPanel() {
       document.getElementById('prefDropdownPanel').classList.toggle('show');
     }
-    function selectRegion(regionName) {
+      
+    function toggleRegion(el) {
+      const regionName = el.value;
       const prefs = REGION_MAP[regionName];
-      if (!prefs) return; 
+      if (!prefs) return;  
+      const isChecked = el.checked;
       const checkboxes = document.querySelectorAll('input[name="advPrefBox"]');
       checkboxes.forEach(cb => {
-        if (prefs.indexOf(cb.value) !== -1) {
-          cb.checked = true;
+        if (prefs.includes(cb.value)) {
+          cb.checked = isChecked;
         }
       });
-      document.getElementById('prefAllCheckbox').checked = false;
-      updatePrefLabel();
+      updatePrefSelection();
+    }
+    
+    function syncRegionCheckboxes() {
+      const regionBoxes = document.querySelectorAll('input[name="advRegionBox"]');
+      regionBoxes.forEach(rBox => {
+        const regionName = rBox.value;
+        const prefs = REGION_MAP[regionName] || [];
+        const targetPrefBoxes = Array.from(document.querySelectorAll('input[name="advPrefBox"]'))
+          .filter(cb => prefs.includes(cb.value));
+        if (targetPrefBoxes.length > 0) {
+          rBox.checked = targetPrefBoxes.every(cb => cb.checked);
+        } else {
+          rBox.checked = false;
+        }
+      });
     }
     
     function togglePrefAll() {
       const isChecked = document.getElementById('prefAllCheckbox').checked;
       if (isChecked) {
+        const regionBoxes = document.querySelectorAll('input[name="advRegionBox"]');
+        regionBoxes.forEach(cb => cb.checked = false);
         const checkboxes = document.querySelectorAll('input[name="advPrefBox"]');
         checkboxes.forEach(cb => cb.checked = false)
       }
@@ -630,12 +650,11 @@
       const checkboxes = document.querySelectorAll('input[name="advPrefBox"]');
       const checkedAny = Array.from(checkboxes).some(cb => cb.checked);
       if (checkedAny) {
-        // 何か1つでも選択されていれば「すべて」のチェックを外す
         document.getElementById('prefAllCheckbox').checked = false;
       } else {
-        // 1つも選択されていなければ「すべて」をチェックする
         document.getElementById('prefAllCheckbox').checked = true;
       }
+      syncRegionCheckboxes();
       updatePrefLabel();
     }
     
@@ -655,6 +674,8 @@
     }
     
     function resetPrefectureFilter() {
+      const regionBoxes = document.querySelectorAll('input[name="advRegionBox"]');
+      regionBoxes.forEach(cb => cb.checked = false);
       const checkboxes = document.querySelectorAll('input[name="advPrefBox"]');
       checkboxes.forEach(cb => cb.checked = false);
       document.getElementById('prefAllCheckbox').checked = true;
