@@ -747,6 +747,33 @@
         loadParamsFromURL();
         filterData();
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetId = urlParams.get('id');
+        if (targetId) {
+          const targetIndex = currentFilteredData.findIndex(row => row['IMGcode'] === targetId);   
+          if (targetIndex !== -1) {
+            const sidebar = document.getElementById('sidebarWrapper');
+            if (sidebar && sidebar.classList.contains('closed')) {
+              toggleSidebar();
+            }
+            
+            while (currentDisplayCount <= targetIndex && currentDisplayCount < currentFilteredData.length) {
+              renderListChunk();
+            }
+            
+            const targetCard = document.getElementById('card-' + targetIndex);
+            if (targetCard) {
+              setTimeout(() => {
+                if (!targetCard.classList.contains('active')) {
+                  targetCard.click();
+                } else {
+                  targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+              }, 100);
+            }
+          }
+        }
+
       } catch (err) {
         document.getElementById('listContainer').innerHTML = '<div class="no-data" style="color:red;">エラー: ' + err.message + '</div>';
       }
@@ -1103,6 +1130,7 @@
       const sidebar = document.getElementById('sidebarWrapper');
       const icon = document.getElementById('toggleIcon');
       const isClosing = !sidebar.classList.contains('closed');
+      sidebar.style.transform = '';
       
       if (isClosing) {
         sidebar.classList.add('closed');
