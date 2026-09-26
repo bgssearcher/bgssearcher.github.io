@@ -304,7 +304,7 @@
             <div class="no-data">読み込み中…</div>
           </div>
         </div>
-        <div class="sidebar-toggle" onclick="toggleSidebar()">
+        <div class="sidebar-toggle">
           <span id="toggleIcon">◀</span>
         </div>
       </div>
@@ -1162,11 +1162,13 @@
       let startY = 0;
       let startWidth = 0;
       let startHeight = 0;
+      let touchStartTime = 0;
       let isClosedStart = false;
 
       function handleStart(clientX, clientY) {
         startX = clientX;
         startY = clientY;
+        touchStartTime = Date.now();
         isDragging = false;
         blockClick = false;
         isClosedStart = sidebar.classList.contains('closed');
@@ -1180,8 +1182,9 @@
         const deltaX = clientX - startX;
         const deltaY = startY - clientY;
         const isMobile = window.innerWidth <= 768;
+        const moveDist = Math.hypot(deltaX, deltaY);
 
-        if (Math.abs(isMobile ? deltaY : deltaX) > 5) {
+        if (moveDist > 8) {
           isDragging = true;
           blockClick = true;
           if (e && e.cancelable) e.preventDefault();
@@ -1196,8 +1199,7 @@
             const minHeight = 80;       
             if (newHeight > maxHeight) newHeight = maxHeight;
             if (newHeight < minHeight) newHeight = minHeight;       
-            sidebar.style.height = `${newHeight}px`;
-            
+            sidebar.style.height = `${newHeight}px`;         
           } else {
             if (isClosedStart) {
               sidebar.classList.remove('closed');
@@ -1205,8 +1207,7 @@
             }
             let currentX = (isClosedStart ? -startWidth : 0) + deltaX;
             if (currentX > 0) currentX = 0;
-            if (currentX < -startWidth) currentX = -startWidth;
-            
+            if (currentX < -startWidth) currentX = -startWidth;         
             sidebar.style.transform = `translateX(${currentX}px)`;
           }
         }
@@ -1214,9 +1215,18 @@
 
       function handleEnd() {
         sidebar.style.transition = '';
+        const elapsedTime = Date.now() - touchStartTime;
+        
         if (isDragging) {
+          if (e && e.cancelable) e.preventDefault();
           blockClick = true;
-          setTimeout(() => { blockClick = false; isDragging = false; }, 350);
+          setTimeout(() => {
+            blockClick = false;
+            isDragging = false;
+          }, 350);
+        } else if (elapsedTime < 250) {
+          // 移動量8px未満かつ250ms以内の場合のみ開閉を実行
+          toggleSidebar();
         }
       }
 
@@ -1230,7 +1240,7 @@
 
       let isMouseDown = false;
       toggleBtn.addEventListener('mousedown', (e) => {
-        if (e.button !== 0) return; // 左クリックのみ
+        if (e.button !== 0) return;
         isMouseDown = true;
         handleStart(e.clientX, e.clientY);
       });
@@ -1238,10 +1248,15 @@
         if (!isMouseDown) return;
         handleMove(e.clientX, e.clientY, e);
       });
-      window.addEventListener('mouseup', () => {
+      window.addEventListener('mouseup', (e) => {
         if (isMouseDown) {
           isMouseDown = false;
           handleEnd();
+        }
+      });
+      toggleBtn.addEventListener('click', (e) => {
+        if (e.pointerType === 'mouse' && !blockClick) {
+          toggleSidebar();
         }
       });
     });
