@@ -768,12 +768,18 @@
             const targetCard = document.getElementById('card-' + targetIndex);
             if (targetCard) {
               setTimeout(() => {
+                map.stop();
                 if (!targetCard.classList.contains('active')) {
                   targetCard.click();
                 } else {
                   targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
-              }, 100);
+                const row = currentFilteredData[targetIndex];
+                if (row && row.lat && row.lng) {
+                  map.setView([row.lat, row.lng], 16, { animate: false });
+                  if (row._marker) row._marker.setIcon(selectedIcon);
+                }
+              }, 400);
             }
           }
         }
@@ -1158,37 +1164,38 @@
       const sidebar = document.getElementById('sidebarWrapper');
       const icon = document.getElementById('toggleIcon');
       
-      let startX = 0;
-      let startY = 0;
-      let startWidth = 0;
-      let startHeight = 0;
-      let touchStartTime = 0;
+      let startX = 0, startY = 0;
+      let isDragging = false;
+      let startWidth = 0, startHeight = 0;
       let isClosedStart = false;
 
-      function handleStart(clientX, clientY) {
-        startX = clientX;
-        startY = clientY;
-        touchStartTime = Date.now();
+      toggleBtn.style.touchAction = 'none';
+
+      toggleBtn.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'mouse' && e.button !== 0) return; // 左クリックのみ
+        
+        toggleBtn.setPointerCapture(e.pointerId);
+        startX = e.clientX;
+        startY = e.clientY;
         isDragging = false;
-        blockClick = false;
         isClosedStart = sidebar.classList.contains('closed');
         
         startWidth = sidebar.offsetWidth;
         startHeight = sidebar.offsetHeight;       
         sidebar.style.transition = 'none';
-      }
+      });
 
-      function handleMove(clientX, clientY, e) {
-        const deltaX = clientX - startX;
-        const deltaY = startY - clientY;
+      toggleBtn.addEventListener('pointermove', (e) => {
+        if (!toggleBtn.hasPointerCapture(e.pointerId)) return;
+        
+        const deltaX = e.clientX - startX;
+        const deltaY = startY - e.clientY;
         const isMobile = window.innerWidth <= 768;
         const moveDist = Math.hypot(deltaX, deltaY);
 
-        if (moveDist > 8) {
+        if (moveDist > 5) {
           isDragging = true;
-          blockClick = true;
-          if (e && e.cancelable) e.preventDefault();
-
+          
           if (isMobile) {
             if (isClosedStart) {
               sidebar.classList.remove('closed');
@@ -1199,7 +1206,7 @@
             const minHeight = 80;       
             if (newHeight > maxHeight) newHeight = maxHeight;
             if (newHeight < minHeight) newHeight = minHeight;       
-            sidebar.style.height = `${newHeight}px`;         
+            sidebar.style.height = `${newHeight}px`;
           } else {
             if (isClosedStart) {
               sidebar.classList.remove('closed');
@@ -1207,57 +1214,26 @@
             }
             let currentX = (isClosedStart ? -startWidth : 0) + deltaX;
             if (currentX > 0) currentX = 0;
-            if (currentX < -startWidth) currentX = -startWidth;         
+            if (currentX < -startWidth) currentX = -startWidth;
             sidebar.style.transform = `translateX(${currentX}px)`;
           }
         }
-      }
+      });
 
-      function handleEnd() {
+      toggleBtn.addEventListener('pointerup', (e) => {
+        if (!toggleBtn.hasPointerCapture(e.pointerId)) return;
+        toggleBtn.releasePointerCapture(e.pointerId);
         sidebar.style.transition = '';
-        const elapsedTime = Date.now() - touchStartTime;
         
-        if (isDragging) {
-          if (e && e.cancelable) e.preventDefault();
-          blockClick = true;
-          setTimeout(() => {
-            blockClick = false;
-            isDragging = false;
-          }, 350);
-        } else if (elapsedTime < 250) {
-          // 移動量8px未満かつ250ms以内の場合のみ開閉を実行
+        if (!isDragging) {
           toggleSidebar();
         }
-      }
+        isDragging = false;
+      });
 
-      toggleBtn.addEventListener('touchstart', (e) => {
-        handleStart(e.touches[0].clientX, e.touches[0].clientY);
-      }, { passive: true });
-      toggleBtn.addEventListener('touchmove', (e) => {
-        handleMove(e.touches[0].clientX, e.touches[0].clientY, e);
-      }, { passive: false });
-      toggleBtn.addEventListener('touchend', handleEnd);
-
-      let isMouseDown = false;
-      toggleBtn.addEventListener('mousedown', (e) => {
-        if (e.button !== 0) return;
-        isMouseDown = true;
-        handleStart(e.clientX, e.clientY);
-      });
-      window.addEventListener('mousemove', (e) => {
-        if (!isMouseDown) return;
-        handleMove(e.clientX, e.clientY, e);
-      });
-      window.addEventListener('mouseup', (e) => {
-        if (isMouseDown) {
-          isMouseDown = false;
-          handleEnd();
-        }
-      });
       toggleBtn.addEventListener('click', (e) => {
-        if (e.pointerType === 'mouse' && !blockClick) {
-          toggleSidebar();
-        }
+        e.preventDefault();
+        e.stopPropagation();
       });
     });
     
