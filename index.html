@@ -1163,6 +1163,7 @@
       let isDragging = false;
       let startWidth = 0, startHeight = 0;
       let isClosedStart = false;
+      let startTranslateX = 0;
 
       toggleBtn.style.touchAction = 'none';
 
@@ -1176,7 +1177,14 @@
         isClosedStart = sidebar.classList.contains('closed');
         
         startWidth = sidebar.offsetWidth;
-        startHeight = sidebar.offsetHeight;       
+        startHeight = sidebar.offsetHeight;
+        
+        const transformMatch = sidebar.style.transform.match(/translateX\(([-0-9.]+)px\)/);
+        if (transformMatch) {
+          startTranslateX = parseFloat(transformMatch[1]);
+        } else {
+          startTranslateX = isClosedStart ? -startWidth : 0;
+        }
         sidebar.style.transition = 'none';
       });
 
@@ -1209,7 +1217,7 @@
               sidebar.classList.remove('closed');
               icon.innerText = '◀';
             }
-            let currentX = (isClosedStart ? -startWidth : 0) + deltaX;
+            let currentX = startTranslateX + deltaX;
             if (currentX > 0) currentX = 0;
             if (currentX < -startWidth) currentX = -startWidth;
             sidebar.style.transform = `translateX(${currentX}px)`;
