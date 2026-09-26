@@ -185,6 +185,11 @@
     .card-content span { font-size: 12px; font-weight: bold; color: #2c3e50; margin-top: auto; }
     .feature-card input[type="checkbox"]:checked + .card-content { border-color: #3498db; background: #ebf5fb; color: #3498db; }
     .card-content.is-active { border-color: #3498db; background: #ebf5fb; color: #3498db; }
+    .input-with-clear { position: relative; display: flex; align-items: center; width: 100%; }
+    .input-with-clear input[type="text"] { width: 100%; padding-right: 30px !important; }
+    .clear-input { display: none; position: absolute; right: 10px; cursor: pointer;
+                  color: #aaa; font-size: 20px; line-height: 1; font-weight: bold; user-select: none; padding: 0 5px; }
+    .clear-input:hover { color: #333; }
     .modal-footer {
       padding: 15px 20px; border-top: 1px solid #ddd; background: #fff; flex-shrink: 0;
       display: flex; justify-content: space-between; align-items: center; gap: 10px;
@@ -294,7 +299,10 @@
       <div id="sidebarWrapper" class="sidebar-wrapper">
         <div class="sidebar-main">
           <div class="search-container">
-            <input type="text" id="searchInput" placeholder="地名を入力…(複数入力可)" oninput="filterData()">
+            <div class="input-with-clear" style="flex: 1;">
+              <input type="text" id="searchInput" placeholder="地名を入力…(複数入力可)" oninput="toggleClearButton(this)">
+              <span class="clear-input" onclick="clearInput('searchInput')">×</span>
+            </div>
             <button id="advancedSearchBtn" onclick="openAdvancedSearch()">
               <span style="font-size: 15px; font-weight: bold;">詳細検索</span>
             </button>
@@ -334,7 +342,7 @@
                 </div>
                 <div id="prefDropdownPanel" class="pref-dropdown-panel">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <div class="feature-section-title" style="margin: 0;">《地方一括選択》</div>
+                    <div class="feature-section-title" style="margin: 0;">《一括選択》</div>
                     <button type="button" class="local-reset-btn" onclick="resetPrefectureFilter()">リセット</button>
                   </div>
 
@@ -344,12 +352,11 @@
                     <label class="pref-checkbox-label"><input type="checkbox" name="advRegionBox" value="近畿" onchange="toggleRegion(this)"> 近畿</label>
                   </div>
                   
-                  <hr style="border: 0; border-top: 1px dashed #ddd; margin: 10px 0;">
-                  <label class="pref-checkbox-label" style="font-weight: bold; color: #3498db;">
+                  <hr style="border: 0; border-top: 1px solid #ddd; margin: 10px 0;">
+                  <label class="pref-checkbox-label" style="color: #3498db;">
                     <input type="checkbox" id="prefAllCheckbox" checked onchange="togglePrefAll()"> すべて
                   </label>
                   
-                  <div class="feature-section-title">《都道府県》</div>
                   <div class="pref-checkbox-grid">
                     <label class="pref-checkbox-label"><input type="checkbox" name="advPrefBox" value="埼玉県" onchange="updatePrefSelection()"> 埼玉県</label>
                     <label class="pref-checkbox-label"><input type="checkbox" name="advPrefBox" value="千葉県" onchange="updatePrefSelection()"> 千葉県</label>
@@ -373,28 +380,40 @@
                   <option value="その他">その他</option>
                 </select>
               </div>
-              <div class="form-group" style="flex: 1;">
-                <label>道路名</label>
-                <div style="display: flex; align-items: center; gap: 5px;">
-                  <input type="text" id="advRoadNameInput" placeholder="例: 1" style="flex: 1;">
-                  <span style="font-weight: bold; white-space: nowrap; margin-top: 2px; font-size: 0.85em; color: #34495e;">（号）</span>
+            </div>
+            
+            <div class="form-group">
+              <label>路線名</label>
+              <div style="display: flex; align-items: center; gap: 5px;">
+                <div class="input-with-clear" style="flex: 1;">
+                  <input type="text" id="advRoadNameInput" placeholder="例：1 / 神奈川県道2号 / 綱島街道" oninput="toggleClearButton(this)">
+                  <span class="clear-input" onclick="clearInput('advRoadNameInput')">×</span>
                 </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>所在地</label>
+              <div class="input-with-clear">
+                <input type="text" id="advAddress" placeholder="住所の一部か全部を入力" oninput="toggleClearButton(this)">
+                <span class="clear-input" onclick="clearInput('advAddress')">×</span>
               </div>
             </div>
             
             <div class="form-group">
-              <label>住所</label>
-              <input type="text" id="advAddress" placeholder="住所の一部か全部を入力">
-            </div>
-            
-            <div class="form-group">
               <label>交差路線</label>
-              <input type="text" id="advCrossRoad" placeholder="例: 国道1号,日比谷通り">
+              <div class="input-with-clear">
+                <input type="text" id="advCrossRoad" placeholder="例：国道1号 / 日比谷通り" oninput="toggleClearButton(this)">
+                <span class="clear-input" onclick="clearInput('advCrossRoad')">×</span>
+              </div>
             </div>
             
             <div class="form-group">
               <label>高速道路案内</label>
-              <input type="text" id="advHighway" placeholder="ﾅﾝﾊﾞﾘﾝｸﾞや道路名を入力（例: E1,東名高速）">
+              <div class="input-with-clear">
+                <input type="text" id="advHighway" placeholder="例：E1 / 東名高速" oninput="toggleClearButton(this)">
+                <span class="clear-input" onclick="clearInput('advHighway')">×</span>
+              </div>
             </div>
           </div>
           
@@ -633,11 +652,30 @@
       document.getElementById('prefAllCheckbox').checked = true;
       updatePrefLabel();
     }
+
+    function toggleClearButton(inputElem) {
+      const clearBtn = inputElem.nextElementSibling;
+      if (clearBtn && clearBtn.classList.contains('clear-input')) {
+        clearBtn.style.display = inputElem.value.length > 0 ? 'block' : 'none';
+      }
+    }
+
+    function clearInput(inputId) {
+      const inputElem = document.getElementById(inputId);
+      if (inputElem) {
+        inputElem.value = '';
+        toggleClearButton(inputElem);
+        inputElem.focus();
+        if (inputId === 'searchInput') {
+          filterData();
+        }
+      }
+    }
     
     function loadParamsFromURL() {
       const params = new URLSearchParams(window.location.search);
       if (!params.toString()) return;
-      if (params.has('q')) { const el = document.getElementById('searchInput'); if (el) el.value = params.get('q'); }
+      if (params.has('q')) { const el = document.getElementById('searchInput'); if (el) { el.value = params.get('q'); toggleClearButton(el); } }
       if (params.has('pref')) {
         const prefs = params.get('pref').split(',');
         const checkboxes = document.querySelectorAll('input[name="advPrefBox"]');
@@ -656,10 +694,10 @@
       }
       
       if (params.has('type')) { const el = document.getElementById('advRoadType'); if (el) el.value = params.get('type'); }
-      if (params.has('road')) { const el = document.getElementById('advRoadNameInput'); if (el) el.value = params.get('road'); }
-      if (params.has('addr')) { const el = document.getElementById('advAddress'); if (el) el.value = params.get('addr'); }
-      if (params.has('cross')) { const el = document.getElementById('advCrossRoad'); if (el) el.value = params.get('cross'); }
-      if (params.has('hwy')) { const el = document.getElementById('advHighway'); if (el) el.value = params.get('hwy'); }
+      if (params.has('road')) { const el = document.getElementById('advRoadNameInput'); if (el) { el.value = params.get('road'); toggleClearButton(el); } }
+      if (params.has('addr')) { const el = document.getElementById('advAddress'); if (el) { el.value = params.get('addr'); toggleClearButton(el); } }
+      if (params.has('cross')) { const el = document.getElementById('advCrossRoad'); if (el) { el.value = params.get('cross'); toggleClearButton(el); } }
+      if (params.has('hwy')) { const el = document.getElementById('advHighway'); if (el) { el.value = params.get('hwy'); toggleClearButton(el); } }
       
       if (params.has('feat')) {
         const feats = params.get('feat').split(',');
@@ -1072,10 +1110,10 @@
       resetPrefectureFilter();
       if (document.getElementById('advPrefecture')) document.getElementById('advPrefecture').value = '';
       if (document.getElementById('advRoadType')) document.getElementById('advRoadType').value = '';
-      if (document.getElementById('advRoadNameInput')) document.getElementById('advRoadNameInput').value = '';
-      if (document.getElementById('advAddress')) document.getElementById('advAddress').value = '';
-      if (document.getElementById('advCrossRoad')) document.getElementById('advCrossRoad').value = '';
-      if (document.getElementById('advHighway')) document.getElementById('advHighway').value = '';
+      if (document.getElementById('advRoadNameInput')) { document.getElementById('advRoadNameInput').value = ''; toggleClearButton(document.getElementById('advRoadNameInput')); }
+      if (document.getElementById('advAddress')) { document.getElementById('advAddress').value = ''; toggleClearButton(document.getElementById('advAddress')); }
+      if (document.getElementById('advCrossRoad')) { document.getElementById('advCrossRoad').value = ''; toggleClearButton(document.getElementById('advCrossRoad')); }
+      if (document.getElementById('advHighway')) { document.getElementById('advHighway').value = ''; toggleClearButton(document.getElementById('advHighway')); }
       const checkboxes = document.querySelectorAll('input[name="advFeature"]');
       checkboxes.forEach(function(cb) {
         cb.checked = false;
