@@ -774,11 +774,6 @@
                 } else {
                   targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
-                const row = currentFilteredData[targetIndex];
-                if (row && row.lat && row.lng) {
-                  map.setView([row.lat, row.lng], 16, { animate: false });
-                  if (row._marker) row._marker.setIcon(selectedIcon);
-                }
               }, 400);
             }
           }
@@ -1201,11 +1196,13 @@
               sidebar.classList.remove('closed');
               icon.innerText = '◀';
             }
-            let newHeight = startHeight + deltaY;
+            let baseHeight = isClosedStart ? 0 : startHeight;
+            let newHeight = baseHeight + deltaY;
+            
             const maxHeight = window.innerHeight * 0.85;
-            const minHeight = 80;       
             if (newHeight > maxHeight) newHeight = maxHeight;
-            if (newHeight < minHeight) newHeight = minHeight;       
+            if (newHeight < 0) newHeight = 0;       
+            
             sidebar.style.height = `${newHeight}px`;
           } else {
             if (isClosedStart) {
@@ -1230,12 +1227,6 @@
         }
         isDragging = false;
       });
-
-      toggleBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      });
-    });
     
     function copyPermalink(imgCode) {
       if (!imgCode) return;
