@@ -652,6 +652,14 @@
       document.getElementById('prefAllCheckbox').checked = true;
       updatePrefLabel();
     }
+    
+    function normalizeText(str) {
+      if (!str) return '';
+      return str
+        .normalize('NFKC')
+        .toLowerCase()
+        .replace(/[ー－―‐\-]/g, '-');
+    }
 
     function toggleClearButton(inputElem) {
       const clearBtn = inputElem.nextElementSibling;
@@ -835,7 +843,7 @@
       updateURLParams();
       
       const keyword = (document.getElementById('searchInput')?.value || '');
-      const searchWords = keyword.trim() ? keyword.toLowerCase().split(/[\s,、]+/) : [];
+      const searchWords = keyword.trim() ? normalizeText(keyword).split(/[\s,、]+/) : [];
 
       const isPrefAll = document.getElementById('prefAllCheckbox')?.checked || false;
       const selectedPrefs = Array.from(document.querySelectorAll('input[name="advPrefBox"]:checked')).map(cb => cb.value);
@@ -843,7 +851,7 @@
       const roadNameRaw = document.getElementById('advRoadNameInput')?.value || '';
       const roadNameWords = roadNameRaw.trim() ? roadNameRaw.toLowerCase().split(/[\s,、]+/) : [];
       const addressRaw = document.getElementById('advAddress')?.value || '';
-      const addressWords = addressRaw.trim() ? addressRaw.toLowerCase().split(/[\s,、]+/) : [];
+      const addressWords = addressRaw.trim() ? normalizeText(addressRaw).split(/[\s,、]+/) : [];
       const crossRoadRaw = document.getElementById('advCrossRoad')?.value || '';
       const crossRoadWords = crossRoadRaw.trim() ? crossRoadRaw.toLowerCase().split(/[\s,、]+/) : [];
       const highwayRaw = document.getElementById('advHighway')?.value || '';
@@ -858,7 +866,7 @@
         if (!row) return false;
         const conditions = [];
         if (searchWords.length > 0) {
-          const desc = (row['地名'] || '').toString().toLowerCase();
+          const desc = normalizeText(row['地名'] || '');
           conditions.push(searchWords.every(word => desc.indexOf(word) !== -1));
         }
         if (!isPrefAll && selectedPrefs.length > 0) {
@@ -872,7 +880,7 @@
           conditions.push(roadNameWords.every(word => advRoadSearchTarget.indexOf(word) !== -1));
         }
         if (addressWords.length > 0) {
-          const addressTarget = (row['住所'] || '').toString().toLowerCase();
+          const addressTarget = normalizeText(row['住所'] || '');
           conditions.push(addressWords.every(word => addressTarget.indexOf(word) !== -1));
         }
         if (crossRoadWords.length > 0) {
@@ -937,7 +945,11 @@
 
         marker.on('click', function() {
           const sidebar = document.getElementById('sidebarWrapper');
-          if (sidebar && sidebar.classList.contains('closed')) toggleSidebar();
+          let delay = 0;
+          if (sidebar && sidebar.classList.contains('closed')) {
+            toggleSidebar();
+            delay = 350;
+          }
           while (currentDisplayCount <= index && currentDisplayCount < currentFilteredData.length) {
             renderListChunk();
           }
@@ -948,7 +960,9 @@
           const targetCard = document.getElementById('card-' + index);
           if (targetCard) {
             targetCard.classList.add('active', 'highlight');
-            targetCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            setTimeout(() => {
+              targetCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, delay);
           }     
           marker.setIcon(selectedIcon);
         });
@@ -1139,19 +1153,23 @@
       }
       const randomIndex = Math.floor(Math.random() * currentFilteredData.length);
       const sidebar = document.getElementById('sidebarWrapper');
+      let delay = 0;
       if (sidebar && sidebar.classList.contains('closed')) {
         toggleSidebar();
+        delay = 350;
       }
       while (currentDisplayCount <= randomIndex && currentDisplayCount < currentFilteredData.length) {
         renderListChunk();
       }
       const targetCard = document.getElementById('card-' + randomIndex);
       if (targetCard) {
-        if (!targetCard.classList.contains('active')) {
-          targetCard.click();
-        } else {
-          targetCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
+        setTimeout(() => {
+          if (!targetCard.classList.contains('active')) {
+            targetCard.click();
+          } else {
+            targetCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }, delay);
       }
     }
     
