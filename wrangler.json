@@ -2,4 +2,8 @@
   "name": "bgssearcher",
   "compatibility_date": "2026-10-08",
   "compatibility_flags": ["nodejs_compat"]
+,
+  "main": "vinext/server/fetch-handler"
+,
+  "assets": { "directory": "dist/client", "not_found_handling": "none", "binding": "ASSETS" }
 }
