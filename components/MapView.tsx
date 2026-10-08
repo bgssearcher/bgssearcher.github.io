@@ -52,7 +52,7 @@ export default function MapView({ data, selection, sidebarOpen, onMarkerClick }:
         });
       iconsRef.current = { normal: makeIcon(false), selected: makeIcon(true) };
 
-      const map = L.map(containerRef.current, { zooming: true, touchZoom: true, zoomControl: false }).setView(
+      const map = L.map(containerRef.current, { touchZoom: true, zoomControl: false }).setView(
         [35.6812, 139.7671],
         10,
       );
@@ -65,9 +65,21 @@ export default function MapView({ data, selection, sidebarOpen, onMarkerClick }:
         attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">国土地理院</a>',
       }).addTo(map);
 
-      clusterRef.current = (L as any)
-        .markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 80, disableClusteringAtZoom: 11, animate: false })
-        .addTo(map);
+            const cluster = (L as any).markerClusterGroup({
+        chunkedLoading: true,
+        maxClusterRadius: 80,
+        disableClusteringAtZoom: 11,
+        animate: false,
+        spiderfyOnMaxZoom: false,   // 放射状に広げる動作をやめる
+        zoomToBoundsOnClick: false, // 標準のズームは使わず、下の自前の動きにする
+      });
+      // 数字の丸をタップしたら、最低1段階は拡大する
+      cluster.on('clusterclick', (e: any) => {
+        const target = Math.max(map.getBoundsZoom(e.layer.getBounds()), map.getZoom() + 1);
+        map.setView(e.layer.getLatLng(), Math.min(target, 18));
+      });
+      cluster.addTo(map);
+      clusterRef.current = cluster;
 
       // ---- 現在地ボタン ----
       let tracking = false;
