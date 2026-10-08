@@ -244,3 +244,9 @@ body {
   body .clear-btn, body .apply-btn { flex: 1; padding: 12px 0; font-size: 15px; text-align: center; }
   input[type="text"],select { font-size: 16px !important; }
 }
+
+/* スマホ: 検索ボックスの高さを詳細検索ボタンに合わせる */
+@media screen and (max-width: 768px) {
+  body .search-container > div { min-width: 0; }
+  body .search-container .input-with-clear { height: 100%; }
+}
