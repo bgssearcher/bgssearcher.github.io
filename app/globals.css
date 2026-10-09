@@ -250,3 +250,9 @@ body {
   body .search-container > div { min-width: 0; }
   body .search-container .input-with-clear { height: 100%; }
 }
+
+/* 閉じているときは、カードに触れても反応しないようにする */
+.sidebar-wrapper.closed .sidebar-main { pointer-events: none; }
+
+/* サイドバー全体にも白背景を敷いて、再表示時に背景が抜けないようにする */
+.sidebar-wrapper { background: #ffffff; }

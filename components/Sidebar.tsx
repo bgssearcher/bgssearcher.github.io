@@ -26,6 +26,7 @@ interface Props {
 export default function Sidebar(p: Props) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const scrolledFor = useRef<Selection | null>(null);
+  const lockUntil = useRef(0); // 開閉の直後は、カードへの勝手なタップを無視するための時刻
   const drag = useRef({ startX: 0, startY: 0, startW: 0, startH: 0, startTx: 0, closedStart: false, dragging: false });
 
   // 選ばれたカードまでリストを自動スクロール（同じ選択では1回だけ）
@@ -93,6 +94,7 @@ export default function Sidebar(p: Props) {
   const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
     e.currentTarget.releasePointerCapture(e.pointerId);
+    lockUntil.current = Date.now() + 500;
     const el = wrapperRef.current;
     if (!el) return;
     el.style.transition = '';
@@ -125,7 +127,15 @@ export default function Sidebar(p: Props) {
 
   return (
     <div ref={wrapperRef} id="sidebarWrapper" className={'sidebar-wrapper' + (p.open ? '' : ' closed')}>
-      <div className="sidebar-main">
+      <div
+        className="sidebar-main"
+        onClickCapture={(e) => {
+          if (Date.now() < lockUntil.current) {
+            e.stopPropagation();
+            e.preventDefault();
+          }
+        }}
+      >
         <div className="search-container">
           <div style={{ flex: 1 }}>
             <ClearableInput
