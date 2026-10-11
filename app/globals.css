@@ -256,3 +256,10 @@ body {
 
 /* サイドバー全体にも白背景を敷いて、再表示時に背景が抜けないようにする */
 .sidebar-wrapper { background: #ffffff; }
+
+/* 地図を拡大するまでデータを取得しないので、その案内 */
+.zoom-hint {
+  position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 20;
+  background: rgba(17, 17, 17, 0.75); color: #ffffff; padding: 8px 16px; border-radius: 20px;
+  font-size: 13px; pointer-events: none; white-space: nowrap;
+}

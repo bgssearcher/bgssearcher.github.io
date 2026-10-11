@@ -1,22 +1,21 @@
-// 青看板1件ぶんのデータ。
-// 元のJSONは日本語キー（'道路名' など）ですが、プログラム内では扱いやすい英語名に変換して使います。
+// 一覧・地図に使う「軽い」データ。範囲取得のときは、これだけを受け取る。
 export interface Sign {
   id: string;          // code（スプレッドシートの code/across。1件ごとに必ず異なる）
   imgCode: string;     // IMGcode（画像ファイル名・共有リンク ?id= 用。無い場合は空）
   hasImage: boolean;   // IMGcode があるか
   roadName: string;    // 道路名
-  place: string;       // 地名
   roadType: string;    // 道路種別（国道 / 県道 / その他）
-  formalName: string;  // 正式名称
   nickname: string;    // 通称
-  prefecture: string;  // 都道府県
   address: string;     // 住所
-  cross: string;       // 交差路線
-  highway: string;     // 高速
-  features: string;    // 特徴
-  shotDate: string;    // 撮影日
   lat: number;
   lng: number;
+}
+
+// カードを開いたときに、あとから取りに行く詳細データ
+export interface SignDetail {
+  formalName: string;  // 正式名称
+  place: string;       // 地名
+  shotDate: string;    // 撮影日
 }
 
 // 「詳細検索」ダイアログで設定する条件
@@ -35,4 +34,19 @@ export interface AdvFilters {
 export interface Selection {
   id: string;
   source: 'card' | 'marker' | 'url' | 'random';
+}
+
+// 地図を引いたときに表示する「まとまり」（数字つきの丸）1つぶん
+export interface ClusterCell {
+  lat: number; // まとまりの中心
+  lng: number;
+  cnt: number; // 看板の数
+}
+
+// 「この場所へ地図を動かして」という依頼（nonce が変わるたびに動く）
+export interface MapTarget {
+  lat: number;
+  lng: number;
+  zoom: number;
+  nonce: number;
 }
