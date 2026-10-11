@@ -1,26 +1,27 @@
 'use client';
 
 import { IMAGE_BASE } from '../lib/constants';
-import type { Sign } from '../lib/types';
+import type { Sign, SignDetail } from '../lib/types';
 
 const PLACEHOLDER = 'https://placehold.co/120x120?text=No+Image';
 
 interface Props {
   sign: Sign;
+  detail?: SignDetail; // カードを開いたあとに届く詳細（まだなら undefined）
   active: boolean;
   onClick: () => void;
   onOpenImage: (src: string) => void;
   onCopyLink: (id: string) => void;
 }
 
-export default function DataCard({ sign, active, onClick, onOpenImage, onCopyLink }: Props) {
+export default function DataCard({ sign, detail, active, onClick, onOpenImage, onCopyLink }: Props) {
   const thumb = sign.hasImage ? `${IMAGE_BASE}/view/${sign.imgCode}_view.jpg` : PLACEHOLDER;
   const full = sign.hasImage ? `${IMAGE_BASE}/folder/${sign.imgCode}.jpg` : PLACEHOLDER;
 
   let title = sign.roadName || '名称未設定';
   if (sign.roadType !== '国道' && sign.nickname) title += `（${sign.nickname}）`;
 
-  const formalName = sign.formalName ? sign.roadName + sign.formalName : sign.roadName || '-';
+  const formalName = detail ? (detail.formalName ? sign.roadName + detail.formalName : sign.roadName || '-') : '…';
 
   return (
     <div
@@ -56,9 +57,9 @@ export default function DataCard({ sign, active, onClick, onOpenImage, onCopyLin
           )}
           <b>座標:</b> {sign.lat}, {sign.lng}
           <br />
-          <b>地名:</b> {sign.place || '-'}
+          <b>地名:</b> {detail ? detail.place || '-' : '…'}
           <br />
-          <b>撮影日:</b> {sign.shotDate || '-'}
+          <b>撮影日:</b> {detail ? detail.shotDate || '-' : '…'}
           <br />
           <div style={{ marginTop: 8, display: 'flex', gap: 16, alignItems: 'center' }}>
             <a

@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type * as LeafletTypes from 'leaflet';
-import type { Selection, Sign } from '../lib/types';
+import { INITIAL_CENTER, MIN_FETCH_ZOOM } from '../lib/constants';
+import type { ViewInfo } from '../lib/geo';
+import type { ClusterCell, MapTarget, Selection, Sign } from '../lib/types';
 
 // CSS は npm パッケージから読み込む（元の ./lib/*.css の代わり）
 import 'leaflet/dist/leaflet.css';
@@ -11,15 +13,20 @@ import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 
 interface Props {
   data: Sign[];
+  cells: ClusterCell[];                    // 地図を引いたときの「まとまり」（数字つきの丸）
   selection: Selection | null;
   sidebarOpen: boolean;
   onMarkerClick: (id: string) => void;
+  onViewChange: (view: ViewInfo) => void; // 地図が動き終わったときに、表示範囲とズームを知らせる
+  fitNonce: number;                       // 変わるたびに、いま出ている看板が全部見えるよう地図を動かす（検索結果用）
+  target: MapTarget | null;               // 指定の場所へ地図を動かす（共有リンク・ランダム用）
 }
 
-export default function MapView({ data, selection, sidebarOpen, onMarkerClick }: Props) {
+export default function MapView({ data, cells, selection, sidebarOpen, onMarkerClick, onViewChange, fitNonce, target }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletTypes.Map | null>(null);
   const clusterRef = useRef<any>(null);
+  const summaryRef = useRef<LeafletTypes.LayerGroup | null>(null); // 「まとまり」の丸を入れる層
   const LRef = useRef<typeof LeafletTypes | null>(null);
   const markersRef = useRef<Map<string, LeafletTypes.Marker>>(new Map());
   const selectedMarkerRef = useRef<LeafletTypes.Marker | null>(null);
@@ -32,6 +39,10 @@ export default function MapView({ data, selection, sidebarOpen, onMarkerClick }:
   sidebarOpenRef.current = sidebarOpen;
   const onMarkerClickRef = useRef(onMarkerClick);
   onMarkerClickRef.current = onMarkerClick;
+  const onViewChangeRef = useRef(onViewChange);
+  onViewChangeRef.current = onViewChange;
+  const dataRef = useRef(data);
+  dataRef.current = data;
 
   // ---- 1. 地図を作る（ブラウザでだけ実行される） ----
   useEffect(() => {
@@ -53,8 +64,8 @@ export default function MapView({ data, selection, sidebarOpen, onMarkerClick }:
       iconsRef.current = { normal: makeIcon(false), selected: makeIcon(true) };
 
       const map = L.map(containerRef.current, { touchZoom: true, zoomControl: false }).setView(
-        [35.6812, 139.7671],
-        10,
+        INITIAL_CENTER,
+        MIN_FETCH_ZOOM,
       );
       L.control.zoom({ position: 'topright' }).addTo(map);
       const isMobile = window.innerWidth <= 768;
@@ -65,7 +76,7 @@ export default function MapView({ data, selection, sidebarOpen, onMarkerClick }:
         attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">国土地理院</a>',
       }).addTo(map);
 
-            const cluster = (L as any).markerClusterGroup({
+      const cluster = (L as any).markerClusterGroup({
         chunkedLoading: true,
         maxClusterRadius: 80,
         disableClusteringAtZoom: 11,
@@ -75,11 +86,12 @@ export default function MapView({ data, selection, sidebarOpen, onMarkerClick }:
       });
       // 数字の丸をタップしたら、最低1段階は拡大する
       cluster.on('clusterclick', (e: any) => {
-        const target = Math.max(map.getBoundsZoom(e.layer.getBounds()), map.getZoom() + 1);
-        map.setView(e.layer.getLatLng(), Math.min(target, 18));
+        const t = Math.max(map.getBoundsZoom(e.layer.getBounds()), map.getZoom() + 1);
+        map.setView(e.layer.getLatLng(), Math.min(t, 18));
       });
       cluster.addTo(map);
       clusterRef.current = cluster;
+      summaryRef.current = L.layerGroup().addTo(map);
 
       // ---- 現在地ボタン ----
       let tracking = false;
@@ -119,8 +131,22 @@ export default function MapView({ data, selection, sidebarOpen, onMarkerClick }:
         if (a) a.style.backgroundColor = '#fff';
       });
 
+      // 地図が動き終わるたびに、表示範囲とズームを知らせる
+      const emitView = () => {
+        const b = map.getBounds();
+        onViewChangeRef.current({
+          zoom: map.getZoom(),
+          south: b.getSouth(),
+          west: b.getWest(),
+          north: b.getNorth(),
+          east: b.getEast(),
+        });
+      };
+      map.on('moveend', emitView);
+
       mapRef.current = map;
       setReady(true);
+      emitView(); // 最初の表示範囲も知らせる
     })();
 
     return () => {
@@ -146,17 +172,61 @@ export default function MapView({ data, selection, sidebarOpen, onMarkerClick }:
     selectedMarkerRef.current = null;
 
     const markers: LeafletTypes.Marker[] = [];
-    const bounds: [number, number][] = [];
     for (const row of data) {
       const marker = L.marker([row.lat, row.lng], { icon: icons.normal });
       marker.on('click', () => onMarkerClickRef.current(row.id));
       markersRef.current.set(row.id, marker);
       markers.push(marker);
-      bounds.push([row.lat, row.lng]);
     }
     cluster.addLayers(markers);
-    if (bounds.length > 0) map.fitBounds(bounds, { padding: [30, 30] });
   }, [ready, data]);
+
+  // ---- 2a. 引いた地図の「まとまり」（数字つきの丸）を描く ----
+  useEffect(() => {
+    const L = LRef.current;
+    const map = mapRef.current;
+    const layer = summaryRef.current;
+    if (!ready || !L || !map || !layer) return;
+
+    layer.clearLayers();
+    for (const c of cells) {
+      // 見た目は、Leaflet.markercluster の標準（緑・黄・橙の丸）と同じ
+      const size = c.cnt < 10 ? 'small' : c.cnt < 100 ? 'medium' : 'large';
+      const icon = L.divIcon({
+        html: `<div><span>${c.cnt}</span></div>`,
+        className: `marker-cluster marker-cluster-${size}`,
+        iconSize: [40, 40],
+      });
+      const m = L.marker([c.lat, c.lng], { icon });
+      // タップしたら、その場所を中心に2段階拡大する
+      m.on('click', () => map.setView([c.lat, c.lng], Math.min(map.getZoom() + 2, 18)));
+      layer.addLayer(m);
+    }
+  }, [ready, cells]);
+
+  // ---- 2b. 検索結果が来たときだけ、全部が見えるよう地図を動かす ----
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!ready || !map || fitNonce === 0) return;
+    const rows = dataRef.current;
+    if (rows.length === 0) return;
+    map.stop();
+    map.fitBounds(
+      rows.map((r) => [r.lat, r.lng] as [number, number]),
+      { padding: [30, 30] },
+    );
+  }, [ready, fitNonce]);
+
+  // ---- 2c. 指定された場所へ地図を動かす（共有リンク・ランダム） ----
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!ready || !map || !target) return;
+    map.stop();
+    map.setView([target.lat, target.lng], target.zoom, { animate: false });
+    if (window.innerWidth <= 768 && sidebarOpenRef.current) {
+      map.panBy([0, window.innerHeight * 0.18], { animate: false });
+    }
+  }, [ready, target]);
 
   // ---- 3. 選ばれた看板が変わったら、色を変えて、必要なら地図を動かす ----
   useEffect(() => {
@@ -175,9 +245,9 @@ export default function MapView({ data, selection, sidebarOpen, onMarkerClick }:
     marker.setIcon(icons.selected);
     selectedMarkerRef.current = marker;
 
-    if (zoomedFor.current === selection) return; // 絞り込みで data だけ変わったときは動かさない
+    if (selection.source !== 'card') return;     // マーカー・共有リンク・ランダムは、ここでは動かさない
+    if (zoomedFor.current === selection) return; // 範囲の取り直しで data だけ変わったときは動かさない
     zoomedFor.current = selection;
-    if (selection.source === 'marker') return;   // マーカーを直接押したときは動かさない
 
     const adjustForMobile = () => {
       if (window.innerWidth <= 768 && sidebarOpenRef.current) {

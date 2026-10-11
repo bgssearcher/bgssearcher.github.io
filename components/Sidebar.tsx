@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import type { Selection, Sign } from '../lib/types';
+import type { ReactNode } from 'react';
+import type { Selection, Sign, SignDetail } from '../lib/types';
 import { ClearableInput } from './small';
 import DataCard from './DataCard';
 
@@ -11,10 +12,11 @@ interface Props {
   keyword: string;
   onKeywordChange: (v: string) => void;
   onOpenAdvanced: () => void;
-  loading: boolean;
-  error: string;
-  total: number;
-  filtered: Sign[];
+  signs: Sign[];                                  // 表示する看板
+  details: Record<string, SignDetail>;            // 開いたカードの詳細
+  countLabel: ReactNode;                          // 「12件（この範囲）」などの表示
+  listMessage: { text: string; error?: boolean } | null; // 看板の代わりに出す案内
+  notice: string | null;                          // 「一部のみ表示しています」などの注意
   visibleCount: number;
   onNeedMore: () => void;
   selection: Selection | null;
@@ -123,7 +125,7 @@ export default function Sidebar(p: Props) {
     if (t.scrollTop + t.clientHeight >= t.scrollHeight - 100) p.onNeedMore();
   };
 
-  const visible = p.filtered.slice(0, p.visibleCount);
+  const visible = p.signs.slice(0, p.visibleCount);
 
   return (
     <div ref={wrapperRef} id="sidebarWrapper" className={'sidebar-wrapper' + (p.open ? '' : ' closed')}>
@@ -150,28 +152,24 @@ export default function Sidebar(p: Props) {
           </button>
         </div>
 
-        <div className="result-count">
-          {p.loading ? '読み込み中…' : (
-            <>
-              <b>{p.filtered.length}</b> / {p.total}件
-            </>
-          )}
-        </div>
+        <div className="result-count">{p.countLabel}</div>
+        {p.notice && (
+          <div className="result-count" style={{ color: '#c0392b' }}>
+            {p.notice}
+          </div>
+        )}
 
         <div className="list-container" id="listContainer" onScroll={onListScroll}>
-          {p.loading && <div className="no-data">読み込み中…</div>}
-          {p.error && (
-            <div className="no-data" style={{ color: 'red' }}>
-              エラー: {p.error}
+          {p.listMessage && (
+            <div className="no-data" style={p.listMessage.error ? { color: 'red' } : undefined}>
+              {p.listMessage.text}
             </div>
-          )}
-          {!p.loading && !p.error && p.filtered.length === 0 && (
-            <div className="no-data">該当するデータがありません</div>
           )}
           {visible.map((sign) => (
             <DataCard
               key={sign.id}
               sign={sign}
+              detail={p.details[sign.id]}
               active={p.selection?.id === sign.id}
               onClick={() => p.onSelectCard(sign.id)}
               onOpenImage={p.onOpenImage}

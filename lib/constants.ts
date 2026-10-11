@@ -74,7 +74,11 @@ export const FEATURE_GROUPS: { title: string; items: FeatureDef[] }[] = [
   },
 ];
 
-export const DATA_URL =
-  'https://gist.githubusercontent.com/Sesso-richu/b4103ef817678288cd1950fea60a8a01/raw/bgs.json';
 export const IMAGE_BASE = 'https://sesso-richu.github.io/bgs_images';
 export const CHUNK_SIZE = 30;
+
+// ---- 地図の範囲取得に関する設定 ----
+export const MIN_FETCH_ZOOM = 12;                                   // このズーム以上で、看板を1件ずつ取得する（これより引いた状態では、件数のまとまりを表示する）
+export const INITIAL_CENTER: [number, number] = [35.6812, 139.7671]; // 開いたときの中心（東京駅付近）
+export const AREA_LIMIT = 300;                                      // 範囲取得で1回に受け取る最大件数
+export const SEARCH_LIMIT = 300;                                    // 検索で1回に受け取る最大件数
