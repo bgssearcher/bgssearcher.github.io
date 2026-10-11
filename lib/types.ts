@@ -1,7 +1,8 @@
 // 青看板1件ぶんのデータ。
 // 元のJSONは日本語キー（'道路名' など）ですが、プログラム内では扱いやすい英語名に変換して使います。
 export interface Sign {
-  id: string;          // IMGcode（無い場合は row-番号）
+  id: string;          // code（スプレッドシートの code/across。1件ごとに必ず異なる）
+  imgCode: string;     // IMGcode（画像ファイル名・共有リンク ?id= 用。無い場合は空）
   hasImage: boolean;   // IMGcode があるか
   roadName: string;    // 道路名
   place: string;       // 地名

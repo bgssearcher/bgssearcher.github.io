@@ -46,7 +46,9 @@ export default function AokanbanApp() {
         setQ(url.q);
         setAdv(url.adv);
         setAllData(signs);
-        if (url.id) setSelection({ id: url.id, source: 'url' });
+        // 共有リンクの ?id= は IMGcode。対応する看板の code を探して選ぶ
+        const target = url.id ? signs.find((s) => s.imgCode === url.id) : undefined;
+        if (target) setSelection({ id: target.id, source: 'url' });
         urlReady.current = true;
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : String(e));

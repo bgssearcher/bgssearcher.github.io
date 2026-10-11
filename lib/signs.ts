@@ -1,4 +1,3 @@
-import { DATA_URL } from './constants';
 import type { AdvFilters, Sign } from './types';
 
 export const EMPTY_ADV: AdvFilters = {
@@ -27,35 +26,37 @@ function splitWords(raw: string): string[] {
 const str = (v: unknown): string => (v === null || v === undefined ? '' : String(v));
 
 export async function loadSigns(): Promise<Sign[]> {
-  const res = await fetch(DATA_URL);
+  // Supabase から直接ではなく、サイト内の窓口（app/api/signs/route.ts）経由で取得する
+  const res = await fetch('/api/signs');
   if (!res.ok) throw new Error('ネットワークエラーが発生しました: ' + res.status);
   const raw: Record<string, unknown>[] = await res.json();
 
   const signs: Sign[] = [];
-  raw.forEach((item, i) => {
-    if (!item) return;
+  for (const item of raw) {
+    if (!item) continue;
     const lat = parseFloat(str(item['lat']));
     const lng = parseFloat(str(item['lng']));
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
-    const code = str(item['IMGcode']);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
+    const imgCode = str(item['img_code']);
     signs.push({
-      id: code || `row-${i}`,
-      hasImage: code !== '',
-      roadName: str(item['道路名']),
-      place: str(item['地名']),
-      roadType: str(item['道路種別']),
-      formalName: str(item['正式名称']),
-      nickname: str(item['通称']),
-      prefecture: str(item['都道府県']),
-      address: str(item['住所']),
-      cross: str(item['交差路線']),
-      highway: str(item['高速']),
-      features: str(item['特徴']),
-      shotDate: str(item['撮影日']),
+      id: str(item['code']),
+      imgCode,
+      hasImage: imgCode !== '',
+      roadName: str(item['road_name']),
+      place: str(item['place']),
+      roadType: str(item['road_type']),
+      formalName: str(item['formal_name']),
+      nickname: str(item['nickname']),
+      prefecture: str(item['prefecture']),
+      address: str(item['address']),
+      cross: str(item['cross_road']),
+      highway: str(item['highway']),
+      features: str(item['features']),
+      shotDate: str(item['shot_date']),
       lat,
       lng,
     });
-  });
+  }
   if (signs.length === 0) throw new Error('表示できるデータが0件です');
   return signs;
 }

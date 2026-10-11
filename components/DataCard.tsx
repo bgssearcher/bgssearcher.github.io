@@ -14,8 +14,8 @@ interface Props {
 }
 
 export default function DataCard({ sign, active, onClick, onOpenImage, onCopyLink }: Props) {
-  const thumb = sign.hasImage ? `${IMAGE_BASE}/view/${sign.id}_view.jpg` : PLACEHOLDER;
-  const full = sign.hasImage ? `${IMAGE_BASE}/folder/${sign.id}.jpg` : PLACEHOLDER;
+  const thumb = sign.hasImage ? `${IMAGE_BASE}/view/${sign.imgCode}_view.jpg` : PLACEHOLDER;
+  const full = sign.hasImage ? `${IMAGE_BASE}/folder/${sign.imgCode}.jpg` : PLACEHOLDER;
 
   let title = sign.roadName || '名称未設定';
   if (sign.roadType !== '国道' && sign.nickname) title += `（${sign.nickname}）`;
@@ -75,7 +75,7 @@ export default function DataCard({ sign, active, onClick, onOpenImage, onCopyLin
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                if (sign.hasImage) onCopyLink(sign.id);
+                if (sign.hasImage) onCopyLink(sign.imgCode);
               }}
               style={{ color: '#3498db', fontWeight: 'bold', textDecoration: 'underline' }}
             >
