@@ -186,7 +186,7 @@ export default function Sidebar(p: Props) {
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
       >
-        <span id="toggleIcon">{p.open ? '◀' : '▶'}</span>
+        <img id="toggleIcon" className={p.open ? 'is-open' : 'is-closed'} src="/img/sidebar-toggle.svg" alt="" draggable={false} />
       </div>
     </div>
   );

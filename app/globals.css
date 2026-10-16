@@ -263,3 +263,24 @@ body {
   background: rgba(17, 17, 17, 0.75); color: #ffffff; padding: 8px 16px; border-radius: 20px;
   font-size: 13px; pointer-events: none; white-space: nowrap;
 }
+
+/* ---- 現在地・サイドバーのアイコンを SVG 画像に差し替え ---- */
+.leaflet-bar a.locate-button { display: flex; align-items: center; justify-content: center; line-height: 1; }
+.locate-icon { width: 18px; height: 18px; display: block; pointer-events: none; user-select: none; }
+
+/* PC・iPad（横長の画面）：回さない。閉じているときは、左右反転 */
+.sidebar-toggle #toggleIcon { width: 18px; height: 18px; display: block; transform: none; pointer-events: none; user-select: none; }
+.sidebar-toggle #toggleIcon.is-closed { transform: scaleX(-1); }
+
+/* スマホ（768px 以下）：90 度右に回す。閉じているときは、画像を左右反転してから回す */
+@media screen and (max-width: 768px) {
+  .sidebar-toggle { --toggle-rot: 90deg; }
+  .sidebar-toggle #toggleIcon { transform: rotate(var(--toggle-rot)); }
+  .sidebar-toggle #toggleIcon.is-closed { transform: rotate(var(--toggle-rot)) scaleX(-1); }
+}
+
+/* ---- つまみの大きさ（細く、少し長く） ---- */
+.sidebar-toggle { width: 20px; height: 84px; right: -20px; }
+@media screen and (max-width: 768px) {
+  .sidebar-toggle { width: 72px; height: 24px; top: -24px; right: auto; }
+}

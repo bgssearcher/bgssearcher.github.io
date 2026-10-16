@@ -97,10 +97,16 @@ export default function MapView({ data, cells, selection, sidebarOpen, onMarkerC
       let tracking = false;
       let locMarker: LeafletTypes.CircleMarker | null = null;
       let locCircle: LeafletTypes.Circle | null = null;
+      // 現在地ボタンの画像を、オン／オフで切り替える
+      new Image().src = '/img/locate-on.svg'; // 先に読み込んでおく（切り替えのちらつき防止）
+      const setLocateIcon = (on: boolean) => {
+        const img = containerRef.current?.querySelector('.locate-icon') as HTMLImageElement | null;
+        if (img) img.src = on ? '/img/locate-on.svg' : '/img/locate.svg';
+      };
       const locate = new L.Control({ position: 'topright' });
       locate.onAdd = () => {
         const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-        div.innerHTML = '<a class="locate-button" title="現在地を表示">📍</a>';
+        div.innerHTML = '<a class="locate-button" title="現在地を表示"><img class="locate-icon" src="/img/locate.svg" alt="" draggable="false"></a>';
         const btn = div.querySelector('a') as HTMLElement;
         div.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -108,9 +114,11 @@ export default function MapView({ data, cells, selection, sidebarOpen, onMarkerC
           if (!tracking) {
             map.locate({ setView: true, maxZoom: 16, watch: true, enableHighAccuracy: true });
             btn.style.backgroundColor = '#ebf5fb';
+            setLocateIcon(true);
           } else {
             map.stopLocate();
             btn.style.backgroundColor = '#fff';
+            setLocateIcon(false);
           }
           tracking = !tracking;
         });
@@ -129,6 +137,7 @@ export default function MapView({ data, cells, selection, sidebarOpen, onMarkerC
         tracking = false;
         const a = containerRef.current?.querySelector('.locate-button') as HTMLElement | null;
         if (a) a.style.backgroundColor = '#fff';
+        setLocateIcon(false);
       });
 
       // 地図が動き終わるたびに、表示範囲とズームを知らせる
