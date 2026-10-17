@@ -42,6 +42,7 @@ export const FEATURE_GROUPS: { title: string; items: FeatureDef[] }[] = [
       { value: '連名', label: '連名', img: 'consecutive.svg' },
       { value: '立体', label: '立体交差', img: 'gsi.svg' },
       { value: '変形', label: '変形交差点', img: 'special.svg' },
+      { value: '赤矢', label: '赤矢印', img: 'red_arrow.svg' },
       { value: '矢印なし', label: '矢印なし', img: 'crossimg_x.svg' },
     ],
   },
