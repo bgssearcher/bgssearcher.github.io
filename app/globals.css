@@ -269,8 +269,8 @@ body {
 .locate-icon { width: 18px; height: 18px; display: block; pointer-events: none; user-select: none; }
 
 /* PC・iPad（横長の画面）：回さない。閉じているときは、左右反転 */
-.sidebar-toggle #toggleIcon { width: 18px; height: 18px; display: block; transform: none; pointer-events: none; user-select: none; }
-.sidebar-toggle #toggleIcon.is-closed { transform: scaleX(-1); }
+.sidebar-toggle #toggleIcon { width: 18px; height: 18px; display: block; transform: scaleX(-1); pointer-events: none; user-select: none; }
+.sidebar-toggle #toggleIcon.is-closed { transform: none; }
 
 /* スマホ（768px 以下）：90 度右に回す。閉じているときは、画像を左右反転してから回す */
 @media screen and (max-width: 768px) {

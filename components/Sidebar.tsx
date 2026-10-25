@@ -137,6 +137,17 @@ export default function Sidebar(p: Props) {
             e.preventDefault();
           }
         }}
+        onMouseDownCapture={(e) => {
+          if (Date.now() < lockUntil.current) {
+            e.stopPropagation();
+            e.preventDefault();
+          }
+        }}
+        onFocusCapture={(e) => {
+          if (Date.now() < lockUntil.current) {
+            (e.target as HTMLElement).blur();
+          }
+        }}
       >
         <div className="search-container">
           <div style={{ flex: 1 }}>
