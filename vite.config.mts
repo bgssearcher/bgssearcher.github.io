@@ -11,5 +11,8 @@ export default defineConfig({
         childEnvironments: ["ssr"],
       },
     }),
-  ]
+  ],
+  server: {
+    allowedHosts: ['.app.github.dev'],
+  },
 })

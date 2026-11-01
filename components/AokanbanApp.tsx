@@ -56,7 +56,7 @@ export default function AokanbanApp() {
   // まとまり表示のあいだは、一覧に看板を出さない。共有リンク・ランダムの1件は、受け取った範囲に入っていなくても先頭に足す
   const displaySigns = useMemo(() => {
     if (!searchMode && mode === 'clusters') return [];
-    if (pinned && !signs.some((s) => s.id === pinned.id)) return [pinned, ...signs];
+    if (pinned) return [pinned, ...signs.filter((s) => s.id !== pinned.id)];
     return signs;
   }, [signs, pinned, searchMode, mode]);
 
@@ -230,6 +230,16 @@ export default function AokanbanApp() {
   useEffect(() => {
     if (pinned && selection?.id !== pinned.id) setPinned(null);
   }, [selection, pinned]);
+
+  // When the search conditions change, release the pinned sign
+  const condReady = useRef(false);
+  useEffect(() => {
+    if (!condReady.current) {
+      condReady.current = true;
+      return;
+    }
+    setPinned(null);
+  }, [q, adv]);
 
   // ---------- 操作用の関数 ----------
   const selectCard = useCallback((id: string) => {
