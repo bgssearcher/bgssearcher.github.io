@@ -8,8 +8,8 @@
 //   /api/signs?kind=cluster&z=ズーム&s&w&n&e    … 地図を引いたときの「まとまり」（数字つきの丸）
 //   /api/signs?kind=meta                        … 全部で何件あるか
 
-import { AREA_LIMIT, SEARCH_LIMIT } from '../../../lib/constants';
-import { clusterCell } from '../../../lib/geo';
+import { AREA_LIMIT, NEAR_MAX_KM, NEAR_MIN_KM, SEARCH_LIMIT } from '../../../lib/constants';
+import { clusterCell, roundCoord } from '../../../lib/geo';
 import { buildFilter } from '../../../lib/query';
 import { buildQueryString, hasFilter, parseUrl } from '../../../lib/signs';
 
@@ -68,6 +68,30 @@ async function sbRpc(name: string, args: Record<string, unknown>): Promise<Recor
   return res.json();
 }
 
+// データベース側の関数を呼ぶ（検索条件・並び順・件数の指定つき。signs_nearby 用）
+async function sbRpcQuery(
+  name: string,
+  args: Record<string, unknown>,
+  params: URLSearchParams,
+  opts: { count?: boolean } = {},
+): Promise<{ rows: Record<string, unknown>[]; count: number | null }> {
+  const { base, key } = sbEnv();
+  const headers: Record<string, string> = { apikey: key, 'Content-Type': 'application/json' };
+  if (opts.count) headers['Prefer'] = 'count=exact';
+  const res = await fetch(`${base}/rest/v1/rpc/${name}?${params.toString()}`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(args),
+  });
+  await sbCheck(res);
+  let count: number | null = null;
+  if (opts.count) {
+    const m = /\/(\d+)$/.exec(res.headers.get('content-range') ?? '');
+    if (m) count = Number(m[1]);
+  }
+  return { rows: await res.json(), count };
+}
+
 // ---------- Cloudflare のキャッシュ ----------
 // 独自ドメイン（aokanban.com）でだけ効きます。ローカルや workers.dev の試験版では毎回 Supabase に取りに行きます。
 async function cachedJson(origin: string, key: string, produce: () => Promise<unknown>) {
@@ -117,6 +141,8 @@ export async function GET(request: Request) {
         return await handleOne(url);
       case 'random':
         return await handleRandom(url);
+      case 'near':
+        return await handleNear(url);
       case 'cluster':
         return await handleCluster(url);
       case 'meta':
@@ -254,6 +280,43 @@ async function handleCluster(url: URL) {
   const { data, hit } = await cachedJson(url.origin, `cluster|${z}|${S}|${W}|${N}|${E}`, async () => {
     const rows = await sbRpc('signs_clusters', { p_grid: cell, p_s: S, p_w: W, p_n: N, p_e: E });
     return { cells: rows, bbox: { south: S, west: W, north: N, east: E } };
+  });
+  return json(data, { hit });
+}
+
+// ---------- 半径検索（中心から○km以内を、近い順に） ----------
+async function handleNear(url: URL) {
+  const sp = new URLSearchParams(url.searchParams);
+  const lat = roundCoord(parseFloat(sp.get('lat') ?? ''));
+  const lng = roundCoord(parseFloat(sp.get('lng') ?? ''));
+  const km = Math.round(parseFloat(sp.get('km') ?? '') * 100) / 100;
+  if (![lat, lng, km].every(Number.isFinite)) throw new HttpError(400, '中心か半径の指定が正しくありません');
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) throw new HttpError(400, '中心の指定が正しくありません');
+  if (km < NEAR_MIN_KM || km > NEAR_MAX_KM) {
+    throw new HttpError(400, `半径は${NEAR_MIN_KM}〜${NEAR_MAX_KM}kmで指定してください`);
+  }
+
+  // キーワード・詳細検索の条件があれば、重ねて使う
+  sp.delete('kind');
+  sp.delete('lat');
+  sp.delete('lng');
+  sp.delete('km');
+  const { q, adv } = parseUrl(sp.toString());
+  const filter = hasFilter(q, adv) ? buildFilter(q, adv) : null;
+
+  const cacheKey = `near|${lat}|${lng}|${km}|${buildQueryString(q, adv, null)}`;
+  const { data, hit } = await cachedJson(url.origin, cacheKey, async () => {
+    const p = new URLSearchParams();
+    p.set('select', LIGHT + ',dist_km');
+    if (filter) p.set(filter.key, filter.value);
+    p.set('order', 'dist_km.asc');
+    p.set('limit', String(SEARCH_LIMIT + 1));
+    const { rows, count } = await sbRpcQuery('signs_nearby', { p_lat: lat, p_lng: lng, p_km: km }, p, { count: true });
+    return {
+      rows: rows.slice(0, SEARCH_LIMIT),
+      truncated: rows.length > SEARCH_LIMIT,
+      hits: count ?? Math.min(rows.length, SEARCH_LIMIT),
+    };
   });
   return json(data, { hit });
 }

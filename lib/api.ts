@@ -1,7 +1,8 @@
 // ブラウザから /api/signs を呼ぶ関数たち
+import { roundCoord } from './geo';
 import type { Bounds } from './geo';
 import { buildQueryString } from './signs';
-import type { AdvFilters, ClusterCell, Sign, SignDetail } from './types';
+import type { AdvFilters, ClusterCell, NearSpec, Sign, SignDetail } from './types';
 
 const str = (v: unknown): string => (v === null || v === undefined ? '' : String(v));
 
@@ -17,6 +18,7 @@ function toSign(raw: Record<string, unknown>): Sign {
     address: str(raw['address']),
     lat: Number(raw['lat']),
     lng: Number(raw['lng']),
+    distKm: raw['dist_km'] == null ? undefined : Number(raw['dist_km']),
   };
 }
 
@@ -111,4 +113,16 @@ export async function fetchOne(by: { code?: string; img?: string }): Promise<{ s
 export async function fetchRandom(): Promise<{ sign: Sign; detail: SignDetail } | null> {
   const j = await getJson('kind=random');
   return j.row ? { sign: toSign(j.row), detail: toDetail(j.row) } : null;
+}
+
+// Signs within a radius of a center, nearest first (can be combined with keyword / advanced search)
+export async function fetchNear(near: NearSpec, q: string, adv: AdvFilters, signal?: AbortSignal): Promise<ListResult> {
+  const p = new URLSearchParams({
+    kind: 'near',
+    lat: String(roundCoord(near.lat)),
+    lng: String(roundCoord(near.lng)),
+    km: String(near.km),
+  });
+  const extra = buildQueryString(q, adv, null);
+  return toList(await getJson(p.toString() + (extra ? '&' + extra : ''), signal));
 }

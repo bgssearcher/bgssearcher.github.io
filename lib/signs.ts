@@ -1,4 +1,6 @@
-import type { AdvFilters } from './types';
+import { NEAR_MAX_KM, NEAR_MIN_KM } from './constants';
+import { roundCoord } from './geo';
+import type { AdvFilters, NearSpec } from './types';
 
 export const EMPTY_ADV: AdvFilters = {
   prefs: [],
@@ -30,6 +32,17 @@ export interface UrlState {
   q: string;
   adv: AdvFilters;
   id: string | null;
+  near: NearSpec | null;
+}
+
+// ?near=lat,lng,km  ->  radius search conditions (null if it is not valid)
+function parseNear(v: string | null): NearSpec | null {
+  if (!v) return null;
+  const [lat, lng, km] = v.split(',').map(Number);
+  if (![lat, lng, km].every(Number.isFinite)) return null;
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+  if (km < NEAR_MIN_KM || km > NEAR_MAX_KM) return null;
+  return { lat: roundCoord(lat), lng: roundCoord(lng), km, source: 'link' };
 }
 
 export function parseUrl(search: string): UrlState {
@@ -38,6 +51,7 @@ export function parseUrl(search: string): UrlState {
   return {
     q: p.get('q') ?? '',
     id: p.get('id'),
+    near: parseNear(p.get('near')),
     adv: {
       prefs: list('pref'),
       roadType: p.get('type') ?? '',
@@ -51,7 +65,7 @@ export function parseUrl(search: string): UrlState {
   };
 }
 
-export function buildQueryString(q: string, adv: AdvFilters, keepId: string | null): string {
+export function buildQueryString(q: string, adv: AdvFilters, keepId: string | null, near: NearSpec | null = null): string {
   const p = new URLSearchParams();
   if (keepId) p.set('id', keepId);
   if (q.trim()) p.set('q', q.trim());
@@ -63,5 +77,6 @@ export function buildQueryString(q: string, adv: AdvFilters, keepId: string | nu
   if (adv.hwy.trim()) p.set('hwy', adv.hwy.trim());
   if (adv.feats.length > 0) p.set('feat', adv.feats.join(','));
   if (adv.mode === 'OR') p.set('mode', 'OR');
+  if (near) p.set('near', [roundCoord(near.lat), roundCoord(near.lng), near.km].join(','));
   return p.toString();
 }

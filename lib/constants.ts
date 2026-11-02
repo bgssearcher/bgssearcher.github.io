@@ -83,3 +83,7 @@ export const MIN_FETCH_ZOOM = 12;                                   // このズ
 export const INITIAL_CENTER: [number, number] = [35.6812, 139.7671]; // 開いたときの中心（東京駅付近）
 export const AREA_LIMIT = 300;                                      // 範囲取得で1回に受け取る最大件数
 export const SEARCH_LIMIT = 300;                                    // 検索で1回に受け取る最大件数
+
+// ---- radius search ----
+export const NEAR_MIN_KM = 0.1; // smallest radius (km)
+export const NEAR_MAX_KM = 100; // largest radius (km)
