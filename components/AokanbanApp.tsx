@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CHUNK_SIZE, MIN_FETCH_ZOOM, SEARCH_LIMIT } from '../lib/constants';
-import { fetchArea, fetchCluster, fetchOne, fetchRandom, fetchSearch, fetchTotal } from '../lib/api';
-import { contains, gridSize, padBounds, snapOutward } from '../lib/geo';
+import { fetchArea, fetchCluster, fetchNear, fetchOne, fetchRandom, fetchSearch, fetchTotal } from '../lib/api';
+import { contains, gridSize, padBounds, roundCoord, snapOutward } from '../lib/geo';
 import type { Bounds, ViewInfo } from '../lib/geo';
 import { EMPTY_ADV, buildQueryString, hasFilter, parseUrl } from '../lib/signs';
-import type { AdvFilters, ClusterCell, MapTarget, Selection, Sign, SignDetail } from '../lib/types';
+import type { AdvFilters, ClusterCell, MapTarget, NearSpec, Selection, Sign, SignDetail } from '../lib/types';
 import AdvancedSearchModal from './AdvancedSearchModal';
 import MapView from './MapView';
+import NearPanel from './NearPanel';
 import Sidebar from './Sidebar';
 import { Header, ImageViewer, Toast } from './small';
 
@@ -28,6 +29,12 @@ export default function AokanbanApp() {
   const [pinned, setPinned] = useState<Sign | null>(null); // 共有リンク・ランダムで指定された1件（必ず表示する）
   const [details, setDetails] = useState<Record<string, SignDetail>>({}); // 開いたカードの詳細
   const [target, setTarget] = useState<MapTarget | null>(null);           // 地図を動かす依頼
+  const [near, setNear] = useState<NearSpec | null>(null);   // 半径検索の条件（中心と半径）
+  const [nearNonce, setNearNonce] = useState(0);              // 変わるたびに、円が見えるよう地図を動かす
+  const [toolOpen, setToolOpen] = useState(false);            // 半径パネルを開いているか
+  const [pickMode, setPickMode] = useState(false);            // 地図をタップして、中心を決めているか
+  const [nearBusy, setNearBusy] = useState(false);            // 現在地を取得しているところか
+  const [nearMessage, setNearMessage] = useState('');         // パネルに出す案内（位置情報のエラーなど）
   const [fitNonce, setFitNonce] = useState(0);             // 検索結果に合わせて地図を動かす合図
 
   const [keywordInput, setKeywordInput] = useState(''); // 入力欄の文字（即時）
@@ -43,22 +50,25 @@ export default function AokanbanApp() {
   const [toast, setToast] = useState({ message: '', show: false });
 
   const searchMode = useMemo(() => hasFilter(q, adv), [q, adv]);
+  // 結果が固定されるモード（キーワード・詳細検索、または半径検索）。地図を動かしても、範囲の取り直しはしない
+  const listMode = searchMode || near !== null;
 
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const viewTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialId = useRef<string | null>(null);
   const viewRef = useRef<ViewInfo | null>(null);
   const searchModeRef = useRef(false);
-  searchModeRef.current = searchMode;
+  searchModeRef.current = listMode;
+  const pendingKm = useRef(5);                                   // 地図をタップで中心を決めるときの半径（km）
   const requestId = useRef(0);                                   // 古い応答を無視するための番号
   const lastFetch = useRef<{ kind: 'points' | 'clusters'; bbox: Bounds; zoom: number } | null>(null);
 
   // まとまり表示のあいだは、一覧に看板を出さない。共有リンク・ランダムの1件は、受け取った範囲に入っていなくても先頭に足す
   const displaySigns = useMemo(() => {
-    if (!searchMode && mode === 'clusters') return [];
+    if (!listMode && mode === 'clusters') return [];
     if (pinned) return [pinned, ...signs.filter((s) => s.id !== pinned.id)];
     return signs;
-  }, [signs, pinned, searchMode, mode]);
+  }, [signs, pinned, listMode, mode]);
 
   // ---------- 地図の範囲で取得 ----------
   // ・ズームが境目以上 … 看板を1件ずつ取得。件数が多すぎるときは、まとまり（数字つきの丸）に切り替える
@@ -127,6 +137,10 @@ export default function AokanbanApp() {
     setQ(url.q);
     setAdv(url.adv);
     setUrlApplied(true);
+    if (url.near) {
+      setNear(url.near);
+      setNearNonce((n) => n + 1);
+    }
 
     fetchTotal()
       .then(setTotal)
@@ -161,17 +175,17 @@ export default function AokanbanApp() {
   // ---------- 3. 条件が変わったらURLを更新（ページ遷移なし） ----------
   useEffect(() => {
     if (!urlApplied) return;
-    const qs = buildQueryString(q, adv, initialId.current);
+    const qs = buildQueryString(q, adv, initialId.current, near);
     history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : ''));
-  }, [q, adv, urlApplied]);
+  }, [q, adv, near, urlApplied]);
 
   // ---------- 4. 検索モード：条件に合う看板を、全国から取得 ----------
   useEffect(() => {
-    if (!searchMode) return;
+    if (!listMode) return;
     const id = ++requestId.current;
     lastFetch.current = null;
     setPhase('loading');
-    fetchSearch(q, adv)
+    (near ? fetchNear(near, q, adv) : fetchSearch(q, adv))
       .then((r) => {
         if (id !== requestId.current) return;
         setSigns(r.signs);
@@ -180,20 +194,20 @@ export default function AokanbanApp() {
         setHits(r.hits);
         setError('');
         setPhase('ready');
-        setFitNonce((n) => n + 1); // 結果が見えるように、地図を動かす
+        if (!near) setFitNonce((n) => n + 1); // 結果が見えるように、地図を動かす
       })
       .catch((e) => {
         if (id !== requestId.current) return;
         setError(e instanceof Error ? e.message : String(e));
         setPhase('error');
       });
-  }, [searchMode, q, adv]);
+  }, [listMode, near, q, adv]);
 
   // ---------- 5. 検索を解除したら、いま見ている範囲を取り直す ----------
   useEffect(() => {
-    if (searchMode) return;
+    if (listMode) return;
     if (viewRef.current) loadArea(viewRef.current, true);
-  }, [searchMode, loadArea]);
+  }, [listMode, loadArea]);
 
   // ---------- 6. リストを先頭30件に戻す ----------
   useEffect(() => {
@@ -239,7 +253,7 @@ export default function AokanbanApp() {
       return;
     }
     setPinned(null);
-  }, [q, adv]);
+  }, [q, adv, near]);
 
   // ---------- 操作用の関数 ----------
   const selectCard = useCallback((id: string) => {
@@ -259,7 +273,7 @@ export default function AokanbanApp() {
 
   const showRandom = useCallback(async () => {
     try {
-      if (searchMode) {
+      if (listMode) {
         // 検索中は、いま出ている結果の中から選ぶ
         if (signs.length === 0) return;
         const pick = signs[Math.floor(Math.random() * signs.length)];
@@ -278,7 +292,7 @@ export default function AokanbanApp() {
     } catch {
       showToast('取得に失敗しました。時間をおいて、もう一度お試しください');
     }
-  }, [searchMode, signs, showToast]);
+  }, [listMode, signs, showToast]);
 
   const copyPermalink = useCallback(
     (imgCode: string) => {
@@ -291,27 +305,109 @@ export default function AokanbanApp() {
     [showToast],
   );
 
+  // ---------- 半径検索 ----------
+  const startNear = useCallback((spec: NearSpec) => {
+    setNear(spec);
+    setNearNonce((n) => n + 1);
+    setPickMode(false);
+    setToolOpen(false);
+    setNearMessage('');
+    setSidebarOpen(true);
+  }, []);
+
+  const applyNear = useCallback(
+    (mode: 'gps' | 'map' | 'tap', km: number) => {
+      setNearMessage('');
+      pendingKm.current = km;
+      if (mode === 'tap') {
+        setPickMode(true);
+        setToolOpen(false);
+        return;
+      }
+      setPickMode(false);
+      if (mode === 'map') {
+        const v = viewRef.current;
+        if (!v) {
+          setNearMessage('地図の準備ができていません。少し待ってもう一度お試しください');
+          return;
+        }
+        startNear({
+          lat: roundCoord((v.south + v.north) / 2),
+          lng: roundCoord((v.west + v.east) / 2),
+          km,
+          source: 'map',
+        });
+        return;
+      }
+      if (!navigator.geolocation) {
+        setNearMessage('この端末では位置情報を使えません');
+        return;
+      }
+      setNearBusy(true);
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setNearBusy(false);
+          startNear({ lat: roundCoord(pos.coords.latitude), lng: roundCoord(pos.coords.longitude), km, source: 'gps' });
+        },
+        () => {
+          setNearBusy(false);
+          setNearMessage('位置情報を取得できませんでした。端末の設定とブラウザの許可を確認してください');
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+      );
+    },
+    [startNear],
+  );
+
+  const pickCenter = useCallback(
+    (lat: number, lng: number) => {
+      startNear({ lat: roundCoord(lat), lng: roundCoord(lng), km: pendingKm.current, source: 'tap' });
+    },
+    [startNear],
+  );
+
+  const clearNear = useCallback(() => {
+    setNear(null);
+    setPickMode(false);
+    setNearMessage('');
+  }, []);
+
+  const toggleTool = useCallback(() => {
+    setPickMode(false);
+    setToolOpen((o) => !o);
+  }, []);
+
+  const copyNearLink = useCallback(() => {
+    if (!near) return;
+    const qs = buildQueryString(q, adv, null, near);
+    const url = window.location.origin + window.location.pathname + '?' + qs;
+    navigator.clipboard
+      .writeText(url)
+      .then(() => showToast('リンクをコピーしました'))
+      .catch((err) => console.error('コピーに失敗しました:', err));
+  }, [near, q, adv, showToast]);
+
   const loadMore = useCallback(() => {
     setVisibleCount((c) => (c < displaySigns.length ? c + CHUNK_SIZE : c));
   }, [displaySigns.length]);
 
   // ---------- リストの上に出す文言 ----------
-  const clusterView = !searchMode && mode === 'clusters';
+  const clusterView = !listMode && mode === 'clusters';
 
   let listMessage: { text: string; error?: boolean } | null = null;
   if (phase === 'error') listMessage = { text: 'エラー: ' + error, error: true };
   else if (clusterView && cells.length > 0)
     listMessage = {
       text: zoomOk
-        ? 'この付近は件数が多いため、地図を拡大すると、一覧に表示されます'
-        : '数字をタップするか、地図を拡大すると、その範囲の看板が一覧に表示されます',
+        ? 'この付近は件数が多いため、地図を拡大すると一覧に表示されます'
+        : '数字をタップするか地図を拡大すると、その範囲の看板が一覧に表示されます',
     };
   else if (phase === 'loading' && displaySigns.length === 0) listMessage = { text: '読み込み中…' };
   else if (phase === 'ready' && displaySigns.length === 0)
-    listMessage = { text: searchMode ? '該当するデータがありません' : 'この範囲に看板はありません' };
+    listMessage = { text: near ? '指定した範囲に該当する看板はありません' : searchMode ? '該当するデータがありません' : 'この範囲に看板はありません' };
 
   // 件数: 「いま表示している件数（検索のときは、ヒットした件数） / 全部の件数」
-  const totalText = total !== null ? ` / ${total}件` : '件';
+  const totalText = total !== null ? ` / ${total}件` : '件表示中';
   const countLabel =
     clusterView && cells.length > 0 ? (
       'ズームして表示' + (total !== null ? ` / 全${total}件` : '')
@@ -319,13 +415,17 @@ export default function AokanbanApp() {
       '読み込み中…'
     ) : (
       <>
-        <b>{searchMode ? hits : displaySigns.length}</b>
+        <b>{listMode ? hits : displaySigns.length}</b>
         {totalText}
       </>
     );
 
   const notice =
-    searchMode && truncated ? `件数が多いため、先頭の${SEARCH_LIMIT}件のみ表示しています。条件を絞ってください。` : null;
+    listMode && truncated
+      ? near
+        ? `件数が多いため、近い順に先頭の${SEARCH_LIMIT}件のみ表示しています。半径を小さくするか、条件を絞ってください。`
+        : `件数が多いため、先頭の${SEARCH_LIMIT}件のみ表示しています。条件を絞ってください。`
+      : null;
 
   return (
     <>
@@ -335,16 +435,33 @@ export default function AokanbanApp() {
         <div className="content-wrapper">
           <MapView
             data={displaySigns}
-            cells={searchMode ? [] : cells}
+            cells={listMode ? [] : cells}
             selection={selection}
             sidebarOpen={sidebarOpen}
             onMarkerClick={selectMarker}
             onViewChange={handleViewChange}
             fitNonce={fitNonce}
             target={target}
+            near={near}
+            nearNonce={nearNonce}
+            pickMode={pickMode}
+            onPick={pickCenter}
+            onToggleTool={toggleTool}
+            toolActive={toolOpen}
           />
-          {clusterView && cells.length > 0 && (
-            <div className="zoom-hint">数字をタップするか、拡大すると、看板が1件ずつ表示されます</div>
+          <NearPanel
+            open={toolOpen}
+            near={near}
+            busy={nearBusy}
+            message={nearMessage}
+            onApply={applyNear}
+            onClear={clearNear}
+            onCopyLink={copyNearLink}
+            onClose={() => setToolOpen(false)}
+          />
+          {pickMode && <div className="zoom-hint">地図をタップして中心を指定してください</div>}
+          {clusterView && !pickMode && cells.length > 0 && (
+            <div className="zoom-hint">数字をタップするか拡大すると、看板が1件ずつ表示されます</div>
           )}
           <Sidebar
             open={sidebarOpen}

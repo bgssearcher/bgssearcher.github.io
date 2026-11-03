@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import type * as LeafletTypes from 'leaflet';
 import { INITIAL_CENTER, MIN_FETCH_ZOOM } from '../lib/constants';
 import type { ViewInfo } from '../lib/geo';
-import type { ClusterCell, MapTarget, Selection, Sign } from '../lib/types';
+import type { ClusterCell, MapTarget, NearSpec, Selection, Sign } from '../lib/types';
 
 // CSS は npm パッケージから読み込む（元の ./lib/*.css の代わり）
 import 'leaflet/dist/leaflet.css';
@@ -19,14 +19,21 @@ interface Props {
   onMarkerClick: (id: string) => void;
   onViewChange: (view: ViewInfo) => void; // 地図が動き終わったときに、表示範囲とズームを知らせる
   fitNonce: number;                       // 変わるたびに、いま出ている看板が全部見えるよう地図を動かす（検索結果用）
+  near: NearSpec | null;                   // 半径検索の条件（円を描く）
+  nearNonce: number;                      // 変わるたびに、円が見えるよう地図を動かす
+  pickMode: boolean;                      // true の間、地図をタップした場所を中心にする
+  onPick: (lat: number, lng: number) => void;
+  onToggleTool: () => void;               // 半径ボタンが押されたとき
+  toolActive: boolean;                    // 半径パネルを開いているか（ボタンの色用）
   target: MapTarget | null;               // 指定の場所へ地図を動かす（共有リンク・ランダム用）
 }
 
-export default function MapView({ data, cells, selection, sidebarOpen, onMarkerClick, onViewChange, fitNonce, target }: Props) {
+export default function MapView({ data, cells, selection, sidebarOpen, onMarkerClick, onViewChange, fitNonce, target, near, nearNonce, pickMode, onPick, onToggleTool, toolActive }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletTypes.Map | null>(null);
   const clusterRef = useRef<any>(null);
   const summaryRef = useRef<LeafletTypes.LayerGroup | null>(null); // 「まとまり」の丸を入れる層
+  const nearLayerRef = useRef<LeafletTypes.LayerGroup | null>(null); // 半径検索の円を入れる層
   const LRef = useRef<typeof LeafletTypes | null>(null);
   const markersRef = useRef<Map<string, LeafletTypes.Marker>>(new Map());
   const selectedMarkerRef = useRef<LeafletTypes.Marker | null>(null);
@@ -43,6 +50,14 @@ export default function MapView({ data, cells, selection, sidebarOpen, onMarkerC
   onViewChangeRef.current = onViewChange;
   const dataRef = useRef(data);
   dataRef.current = data;
+  const nearRef = useRef(near);
+  nearRef.current = near;
+  const pickModeRef = useRef(pickMode);
+  pickModeRef.current = pickMode;
+  const onPickRef = useRef(onPick);
+  onPickRef.current = onPick;
+  const onToggleToolRef = useRef(onToggleTool);
+  onToggleToolRef.current = onToggleTool;
 
   // ---- 1. 地図を作る（ブラウザでだけ実行される） ----
   useEffect(() => {
@@ -92,6 +107,7 @@ export default function MapView({ data, cells, selection, sidebarOpen, onMarkerC
       cluster.addTo(map);
       clusterRef.current = cluster;
       summaryRef.current = L.layerGroup().addTo(map);
+      nearLayerRef.current = L.layerGroup().addTo(map);
 
       // ---- 現在地ボタン ----
       let tracking = false;
@@ -125,6 +141,29 @@ export default function MapView({ data, cells, selection, sidebarOpen, onMarkerC
         return div;
       };
       locate.addTo(map);
+
+      // ---- 半径検索ボタン（現在地ボタンの下） ----
+      const nearControl = new L.Control({ position: 'topright' });
+      nearControl.onAdd = () => {
+        const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+        div.innerHTML =
+          '<a class="near-button" role="button" title="半径を指定して探す" aria-label="半径を指定して探す">' +
+          '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#333333" stroke-width="2" stroke-linecap="round">' +
+          '<circle cx="12" cy="12" r="9" stroke-dasharray="3 3"></circle>' +
+          '<circle cx="12" cy="12" r="2" fill="#333333" stroke="none"></circle></svg></a>';
+        L.DomEvent.disableClickPropagation(div);
+        div.addEventListener('click', (e) => {
+          e.preventDefault();
+          onToggleToolRef.current();
+        });
+        return div;
+      };
+      nearControl.addTo(map);
+
+      // 地図をタップして、中心を決めるとき
+      map.on('click', (e: LeafletTypes.LeafletMouseEvent) => {
+        if (pickModeRef.current) onPickRef.current(e.latlng.lat, e.latlng.lng);
+      });
 
       map.on('locationfound', (e: LeafletTypes.LocationEvent) => {
         if (locMarker) map.removeLayer(locMarker);
@@ -236,6 +275,58 @@ export default function MapView({ data, cells, selection, sidebarOpen, onMarkerC
       map.panBy([0, window.innerHeight * 0.18], { animate: false });
     }
   }, [ready, target]);
+
+  // ---- 2d. 半径検索の円と中心を描く ----
+  useEffect(() => {
+    const L = LRef.current;
+    const layer = nearLayerRef.current;
+    if (!ready || !L || !layer) return;
+    layer.clearLayers();
+    if (!near) return;
+    L.circle([near.lat, near.lng], {
+      radius: near.km * 1000,
+      color: '#e67e22',
+      weight: 2,
+      dashArray: '6 6',
+      fillColor: '#e67e22',
+      fillOpacity: 0.06,
+      interactive: false,
+    }).addTo(layer);
+    L.circleMarker([near.lat, near.lng], {
+      radius: 5,
+      color: '#ffffff',
+      weight: 2,
+      fillColor: '#e67e22',
+      fillOpacity: 1,
+      interactive: false,
+    }).addTo(layer);
+  }, [ready, near]);
+
+  // ---- 2e. 半径検索を始めたときだけ、円が見えるよう地図を動かす ----
+  useEffect(() => {
+    const L = LRef.current;
+    const map = mapRef.current;
+    if (!ready || !L || !map || nearNonce === 0) return;
+    const n = nearRef.current;
+    if (!n) return;
+    const bounds = L.latLng(n.lat, n.lng).toBounds(n.km * 2000);
+    const mobileOpen = window.innerWidth <= 768 && sidebarOpenRef.current;
+    map.stop();
+    map.fitBounds(bounds, {
+      paddingTopLeft: [20, 20],
+      paddingBottomRight: [20, mobileOpen ? Math.round(window.innerHeight * 0.4) : 20],
+    });
+  }, [ready, nearNonce]);
+
+  // ---- 2f. 半径ボタンの色と、地図をタップして中心を決めるときのカーソル ----
+  useEffect(() => {
+    const a = containerRef.current?.querySelector('.near-button') as HTMLElement | null;
+    if (a) a.classList.toggle('active', toolActive || !!near);
+  }, [ready, toolActive, near]);
+
+  useEffect(() => {
+    containerRef.current?.classList.toggle('pick-mode', pickMode);
+  }, [ready, pickMode]);
 
   // ---- 3. 選ばれた看板が変わったら、色を変えて、必要なら地図を動かす ----
   useEffect(() => {
