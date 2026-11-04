@@ -160,6 +160,10 @@ export default function MapView({ data, cells, selection, sidebarOpen, onMarkerC
       };
       nearControl.addTo(map);
 
+      // ---- 地図の中心の十字（「地図の中心」を指定するときの目印） ----
+      const cross = L.DomUtil.create('div', 'map-crosshair', map.getContainer());
+      cross.setAttribute('aria-hidden', 'true');
+
       // 地図をタップして、中心を決めるとき
       map.on('click', (e: LeafletTypes.LeafletMouseEvent) => {
         if (pickModeRef.current) onPickRef.current(e.latlng.lat, e.latlng.lng);
