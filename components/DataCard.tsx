@@ -14,6 +14,12 @@ interface Props {
   onCopyLink: (id: string) => void;
 }
 
+// 距離の表示（1km未満はm、それ以上はkm）
+function formatKm(km: number): string {
+  if (km < 1) return `${Math.max(10, Math.round((km * 1000) / 10) * 10)} m`;
+  return `${km < 10 ? km.toFixed(1) : Math.round(km)} km`;
+}
+
 export default function DataCard({ sign, detail, active, onClick, onOpenImage, onCopyLink }: Props) {
   const thumb = sign.hasImage ? `${IMAGE_BASE}/view/${sign.imgCode}_view.jpg` : PLACEHOLDER;
   const full = sign.hasImage ? `${IMAGE_BASE}/folder/${sign.imgCode}.jpg` : PLACEHOLDER;
@@ -44,6 +50,7 @@ export default function DataCard({ sign, detail, active, onClick, onOpenImage, o
       <div className="card-info">
         <h3 className="card-name">{title}</h3>
         <p className="card-address">{sign.address || '住所未設定'}</p>
+        {sign.distKm !== undefined && <p className="card-distance">中心から {formatKm(sign.distKm)}</p>}
 
         {/* 詳細部分は active のときだけ CSS で表示される（元のまま） */}
         <div className="card-detail">

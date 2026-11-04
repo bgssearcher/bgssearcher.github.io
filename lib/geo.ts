@@ -51,3 +51,6 @@ export function contains(outer: Bounds, inner: Bounds): boolean {
     inner.east <= outer.east
   );
 }
+
+// Round a coordinate to 3 decimals (about 100 m), so an exact position never goes into a URL or a request
+export const roundCoord = (x: number) => Math.round(x * 1000) / 1000;

@@ -9,6 +9,7 @@ export interface Sign {
   address: string;     // 住所
   lat: number;
   lng: number;
+  distKm?: number;     // km from the center (radius search only)
 }
 
 // カードを開いたときに、あとから取りに行く詳細データ
@@ -49,4 +50,12 @@ export interface MapTarget {
   lng: number;
   zoom: number;
   nonce: number;
+}
+
+// Radius search: center and radius
+export interface NearSpec {
+  lat: number;
+  lng: number;
+  km: number;
+  source: 'gps' | 'map' | 'tap' | 'link'; // how the center was decided (only 'gps' shows a sharing warning)
 }
