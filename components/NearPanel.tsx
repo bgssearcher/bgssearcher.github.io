@@ -105,9 +105,16 @@ export default function NearPanel({ open, near, busy, message, onApply, onClear,
 
       {near && (
         <div className="near-share">
-          <button className="local-reset-btn" onClick={onCopyLink}>
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              onCopyLink();
+            }}
+            style={{ color: '#3498db', fontWeight: 'bold', textDecoration: 'underline' }}
+          >
             リンクをコピー
-          </button>
+          </a>
           {near.source === 'gps' && (
             <p className="near-warn">
               このリンクには、中心の座標（約100m単位）が含まれます。現在地を中心にしたまま共有すると、おおよその居場所が相手に伝わります。
