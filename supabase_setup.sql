@@ -1,9 +1,9 @@
 -- ============================================================
 -- 青看板データベースの初期設定（Supabase の SQL Editor に貼り付けて Run）
 --
--- 何度実行しても、データは消えません（「なければ作る」「あれば置き換える」だけです）。
+-- 何度実行しても、データは消えない（「なければ作る」「あれば置き換える」だけ）。
 -- ・プロジェクトを作り直したとき、最初に1回だけ実行する
--- ・データの更新（同期）のたびに実行する必要は、ありません。更新は GAS の「今すぐ同期」だけです
+-- ・データの更新（同期）のたびに実行する必要はない。更新は GAS の「今すぐ同期」だけ
 --
 -- ⚠ このファイルに drop table を足さないでください（足して実行すると、全データが消えます）
 -- ============================================================
@@ -72,4 +72,42 @@ grant execute on function public.signs_clusters(double precision, double precisi
   to anon, authenticated;
 
 -- 反映を促す
+notify pgrst, 'reload schema';
+
+-- ---------- 半径検索（中心から○km以内の看板と、中心までの距離を返す） ----------
+create or replace function public.signs_nearby(
+  p_lat double precision,   -- 中心の緯度
+  p_lng double precision,   -- 中心の経度
+  p_km double precision     -- 半径（km）
+)
+returns table (
+  code text, img_code text, road_name text, road_type text, nickname text, address text,
+  prefecture text, features text, lat double precision, lng double precision,
+  place_n text, road_n text, address_n text, cross_n text, highway_n text,
+  dist_km double precision
+)
+language sql
+stable
+as $$
+  select t.*
+  from (
+    select
+      s.code, s.img_code, s.road_name, s.road_type, s.nickname, s.address,
+      s.prefecture, s.features, s.lat, s.lng,
+      s.place_n, s.road_n, s.address_n, s.cross_n, s.highway_n,
+      6371.0088 * 2 * asin(sqrt(least(1.0,
+        power(sin(radians(s.lat - p_lat) / 2), 2)
+        + cos(radians(p_lat)) * cos(radians(s.lat)) * power(sin(radians(s.lng - p_lng) / 2), 2)
+      ))) as dist_km
+    from public.signs s
+    where s.lat between p_lat - p_km / 111.0 and p_lat + p_km / 111.0
+      and s.lng between p_lng - p_km / (111.0 * greatest(cos(radians(p_lat)), 0.01))
+                    and p_lng + p_km / (111.0 * greatest(cos(radians(p_lat)), 0.01))
+  ) t
+  where t.dist_km <= p_km
+$$;
+
+grant execute on function public.signs_nearby(double precision, double precision, double precision)
+  to anon, authenticated;
+
 notify pgrst, 'reload schema';
