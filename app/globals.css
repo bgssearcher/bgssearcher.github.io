@@ -289,11 +289,11 @@ body {
 .label-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
 .form-group .label-row label { margin-bottom: 0; }
 .help-btn {
-  position: relative; width: 24px; height: 24px; padding: 0; border: none; border-radius: 50%;
+  position: relative; width: 15px; height: 15px; padding: 0; border: none; border-radius: 50%;
   background: transparent; color: #7f8c8d; cursor: pointer;
   display: inline-flex; align-items: center; justify-content: center;
 }
-.help-btn svg { width: 24px; height: 24px; display: block; pointer-events: none; }
+.help-btn svg { width: 15px; height: 15px; display: block; pointer-events: none; }
 /* 見た目より広く押せるようにする（スマホ用） */
 .help-btn::after { content: ''; position: absolute; inset: -8px; }
 .help-btn[aria-expanded="true"] { background: #ecf0f1; }
