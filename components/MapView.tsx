@@ -86,10 +86,11 @@ export default function MapView({ data, cells, selection, sidebarOpen, onMarkerC
       const isMobile = window.innerWidth <= 768;
       L.control.scale({ imperial: false, position: isMobile ? 'topleft' : 'bottomright' }).addTo(map);
 
-      L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png', {
+      L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
         maxZoom: 18,
         attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">国土地理院</a>',
       }).addTo(map);
+      map.getPane('tilePane')!.style.filter = 'saturate(0.6) brightness(1.1)'; // 標準地図の色を薄める
 
       const cluster = (L as any).markerClusterGroup({
         chunkedLoading: true,

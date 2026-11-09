@@ -5,6 +5,7 @@ import { AVAILABLE_PREFS, AVAILABLE_REGIONS, FEATURE_GROUPS, REGION_MAP } from '
 import { EMPTY_ADV } from '../lib/signs';
 import type { AdvFilters } from '../lib/types';
 import { ClearableInput } from './small';
+import { HELP } from '../lib/help';
 
 interface Props {
   open: boolean;
@@ -14,15 +15,60 @@ interface Props {
   onClose: () => void;
 }
 
+function HelpLabel({ id, label, open, onToggle }: { id: string; label: string; open: boolean; onToggle: (id: string) => void }) {
+  return (
+    <div className="label-row">
+      <label>{label}</label>
+      <button
+        type="button"
+        className="help-btn"
+        aria-label={`${label}の説明`}
+        aria-expanded={open}
+        aria-controls={`help-${id}`}
+        onClick={() => onToggle(id)}
+      >
+        <svg viewBox="0 -960 960 960" width="24" height="24" fill="currentColor" aria-hidden="true">
+          <path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+function HelpBox({ id, open }: { id: string; open: boolean }) {
+  const h = HELP[id];
+  if (!open || !h) return null;
+  return (
+    <div className="help-box" id={`help-${id}`}>
+      <div>{h.text}</div>
+      {(h.imgs ?? []).map((src) => (
+        <img
+          key={src}
+          src={`/img/help/${src}`}
+          alt=""
+          onError={(e) => {
+            e.currentTarget.style.display = 'none';
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function AdvancedSearchModal({ open, applied, onApply, onClear, onClose }: Props) {
   // ダイアログの中で編集中の値（「適用」を押すまで検索には反映されない）
   const [draft, setDraft] = useState<AdvFilters>(applied);
   const [prefOpen, setPrefOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState<Record<string, boolean>>({});
+  const toggleHelp = (id: string) => setHelpOpen((o) => ({ ...o, [id]: !o[id] }));
   const prefRef = useRef<HTMLDivElement>(null);
 
   // 開くたびに、適用中の条件で編集欄を初期化
   useEffect(() => {
-    if (open) setDraft(applied);
+    if (open) {
+      setDraft(applied);
+      setHelpOpen({});
+    }
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 都道府県パネルの外をクリックしたら閉じる
@@ -138,11 +184,13 @@ export default function AdvancedSearchModal({ open, applied, onApply, onClear, o
                 <ClearableInput value={draft.addr} onChange={(v) => set('addr', v)} placeholder="住所の一部か全部を入力" />
               </div>
               <div className="form-group">
-                <label>交差路線</label>
+                <HelpLabel id="cross" label="交差路線" open={!!helpOpen.cross} onToggle={toggleHelp} />
+                <HelpBox id="cross" open={!!helpOpen.cross} />
                 <ClearableInput value={draft.cross} onChange={(v) => set('cross', v)} placeholder="例：国道1号 / 日比谷通り / 環状七号線" />
               </div>
               <div className="form-group">
-                <label>高速道路案内</label>
+                <HelpLabel id="hwy" label="高速道路案内" open={!!helpOpen.hwy} onToggle={toggleHelp} />
+                <HelpBox id="hwy" open={!!helpOpen.hwy} />
                 <ClearableInput value={draft.hwy} onChange={(v) => set('hwy', v)} placeholder="例：E1 / 東名 / 稲荷山トンネル / ETC" />
               </div>
             </div>

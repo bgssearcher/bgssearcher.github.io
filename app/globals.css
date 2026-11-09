@@ -284,3 +284,21 @@ body {
 @media screen and (max-width: 768px) {
   .sidebar-toggle { width: 72px; height: 24px; top: -24px; right: auto; }
 }
+
+/* ---- 詳細検索のヘルプ（Material Symbols の info） ---- */
+.label-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+.form-group .label-row label { margin-bottom: 0; }
+.help-btn {
+  position: relative; width: 24px; height: 24px; padding: 0; border: none; border-radius: 50%;
+  background: transparent; color: #7f8c8d; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.help-btn svg { width: 24px; height: 24px; display: block; pointer-events: none; }
+/* 見た目より広く押せるようにする（スマホ用） */
+.help-btn::after { content: ''; position: absolute; inset: -8px; }
+.help-btn[aria-expanded="true"] { background: #ecf0f1; }
+.help-box {
+  background: #f4f6f7; border: 1px solid #dfe4e6; border-radius: 6px;
+  padding: 8px 10px; margin-bottom: 8px; font-size: 13px; line-height: 1.6; color: #34495e;
+}
+.help-box img { display: block; max-width: 100%; height: auto; margin-top: 8px; border-radius: 4px; }
