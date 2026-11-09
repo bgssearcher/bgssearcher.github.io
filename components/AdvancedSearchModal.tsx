@@ -44,7 +44,7 @@ function HelpBox({ id, open }: { id: string; open: boolean }) {
       {(h.imgs ?? []).map((src) => (
         <img
           key={src}
-          src={`/img/help/${src}`}
+          src={`/img/${src}`}
           alt=""
           onError={(e) => {
             e.currentTarget.style.display = 'none';
