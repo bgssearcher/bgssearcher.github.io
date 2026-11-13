@@ -472,6 +472,8 @@ export default function AokanbanApp() {
               if (v === '') setQ(''); // ×ボタンで消したときは待たずに即反映
             }}
             onOpenAdvanced={() => setModalOpen(true)}
+            adv={adv}
+            onAdvChange={setAdv}
             signs={displaySigns}
             details={details}
             countLabel={countLabel}

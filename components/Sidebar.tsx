@@ -2,8 +2,10 @@
 
 import { useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
-import type { Selection, Sign, SignDetail } from '../lib/types';
+import type { AdvFilters, Selection, Sign, SignDetail } from '../lib/types';
 import { ClearableInput } from './small';
+import { advChips, advKinds } from '../lib/advChips';
+import { EMPTY_ADV } from '../lib/signs';
 import DataCard from './DataCard';
 
 interface Props {
@@ -12,6 +14,8 @@ interface Props {
   keyword: string;
   onKeywordChange: (v: string) => void;
   onOpenAdvanced: () => void;
+  adv: AdvFilters;                                // いま適用している詳細検索の条件
+  onAdvChange: (adv: AdvFilters) => void;         // 条件を外したときに呼ぶ
   signs: Sign[];                                  // 表示する看板
   details: Record<string, SignDetail>;            // 開いたカードの詳細
   countLabel: ReactNode;                          // 「12件（この範囲）」などの表示
@@ -126,6 +130,8 @@ export default function Sidebar(p: Props) {
   };
 
   const visible = p.signs.slice(0, p.visibleCount);
+  const chips = advChips(p.adv);
+  const kinds = advKinds(p.adv);
 
   return (
     <div ref={wrapperRef} id="sidebarWrapper" className={'sidebar-wrapper' + (p.open ? '' : ' closed')}>
@@ -158,10 +164,31 @@ export default function Sidebar(p: Props) {
               placeholder="地名を入力…(複数入力可)"
             />
           </div>
-          <button id="advancedSearchBtn" onClick={p.onOpenAdvanced}>
+          <button id="advancedSearchBtn" className={kinds > 0 ? 'active' : ''} onClick={p.onOpenAdvanced}>
             <span style={{ fontSize: 15, fontWeight: 'bold' }}>詳細検索</span>
+            {kinds > 0 && <span className="adv-badge">{kinds}</span>}
           </button>
         </div>
+
+        {chips.length > 0 && (
+          <div className="filter-chips">
+            <button type="button" className="filter-chip-clear" onClick={() => p.onAdvChange(EMPTY_ADV)}>
+              すべて解除
+            </button>
+            {chips.map((c) => (
+              <button
+                key={c.key}
+                type="button"
+                className="filter-chip"
+                aria-label={`${c.label}を解除`}
+                onClick={() => p.onAdvChange(c.remove(p.adv))}
+              >
+                <span className="chip-text">{c.label}</span>
+                <span className="chip-x" aria-hidden="true">×</span>
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="result-count">{p.countLabel}</div>
         {p.notice && (

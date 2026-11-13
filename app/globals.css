@@ -302,3 +302,31 @@ body {
   padding: 8px 10px; margin-bottom: 8px; font-size: 13px; line-height: 1.6; color: #34495e;
 }
 .help-box img { display: block; max-width: 100%; height: auto; margin-top: 8px; border-radius: 4px; }
+
+/* ---- 絞り込み中の表示（詳細検索のバッジ・条件の札） ---- */
+#advancedSearchBtn.active { background: #ebf5fb; border-color: #3498db; }
+.adv-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 20px; height: 20px; padding: 0 5px; margin-left: 6px; box-sizing: border-box;
+  border-radius: 10px; background: #3498db; color: #ffffff; font-size: 12px; font-weight: bold;
+}
+.filter-chips {
+  display: flex; flex-wrap: nowrap; gap: 6px; padding: 0 12px 8px 12px; flex-shrink: 0;
+  overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; background: #ffffff;
+}
+.filter-chips::-webkit-scrollbar { display: none; }
+.filter-chip {
+  flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 8px 5px 10px; border: 1px solid #3498db; border-radius: 14px;
+  background: #ebf5fb; color: #2c3e50; font-size: 12px; font-weight: bold; line-height: 1.2; cursor: pointer;
+}
+.filter-chip .chip-text { max-width: 14em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.filter-chip .chip-x { color: #3498db; font-size: 14px; line-height: 1; }
+.filter-chip-clear {
+  flex-shrink: 0; padding: 5px 10px; border: 1px solid #bdc3c7; border-radius: 14px;
+  background: #ffffff; color: #555555; font-size: 12px; line-height: 1.2; cursor: pointer;
+}
+.filter-chip-clear:hover { background: #eef2f5; }
+@media screen and (max-width: 768px) {
+  body .filter-chips { padding: 0 6px 6px 6px; }
+}
