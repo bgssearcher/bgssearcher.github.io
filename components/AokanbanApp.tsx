@@ -265,10 +265,10 @@ export default function AokanbanApp() {
     setSelection({ id, source: 'marker' });
   }, []);
 
-  const showToast = useCallback((message: string) => {
+  const showToast = useCallback((message: string, ms = 2000) => {
     setToast({ message, show: true });
     if (toastTimer.current) clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToast((t) => ({ ...t, show: false })), 2000);
+    toastTimer.current = setTimeout(() => setToast((t) => ({ ...t, show: false })), ms);
   }, []);
 
   const showRandom = useCallback(async () => {
@@ -377,15 +377,31 @@ export default function AokanbanApp() {
     setToolOpen((o) => !o);
   }, []);
 
-  const copyNearLink = useCallback(() => {
-    if (!near) return;
+  // 今の検索条件（キーワード・詳細検索・半径検索）を、リンクにしてコピーする
+  const copyConditionLink = useCallback(() => {
+    if (!listMode) {
+      showToast('検索条件を指定すると、そのリンクをコピーできます');
+      return;
+    }
     const qs = buildQueryString(q, adv, null, near);
     const url = window.location.origin + window.location.pathname + '?' + qs;
+    // 現在地を中心にした半径検索のリンクには、おおよその居場所が含まれるので、コピーしたときに知らせる
+    const gps = near?.source === 'gps';
     navigator.clipboard
       .writeText(url)
-      .then(() => showToast('リンクをコピーしました'))
-      .catch((err) => console.error('コピーに失敗しました:', err));
-  }, [near, q, adv, showToast]);
+      .then(() =>
+        showToast(
+          gps
+            ? 'リンクをコピーしました。現在地を中心にしているため、リンクにはおおよその居場所（約100m単位）が含まれます'
+            : 'リンクをコピーしました',
+          gps ? 5000 : 2000,
+        ),
+      )
+      .catch((err) => {
+        console.error('コピーに失敗しました:', err);
+        showToast('コピーできませんでした');
+      });
+  }, [listMode, q, adv, near, showToast]);
 
   const loadMore = useCallback(() => {
     setVisibleCount((c) => (c < displaySigns.length ? c + CHUNK_SIZE : c));
@@ -407,7 +423,7 @@ export default function AokanbanApp() {
     listMessage = { text: near ? '指定した範囲に該当する看板はありません' : searchMode ? '該当するデータがありません' : 'この範囲に看板はありません' };
 
   // 件数: 「いま表示している件数（検索のときは、ヒットした件数） / 全部の件数」
-  const totalText = total !== null ? ` / ${total}件` : '件表示中';
+  const totalText = total !== null ? `件表示中 / 全${total}件` : '件表示中';
   const countLabel =
     clusterView && cells.length > 0 ? (
       'ズームして表示' + (total !== null ? ` / 全${total}件` : '')
@@ -448,6 +464,8 @@ export default function AokanbanApp() {
             onPick={pickCenter}
             onToggleTool={toggleTool}
             toolActive={toolOpen}
+            onCopyLink={copyConditionLink}
+            linkReady={listMode}
           />
           <NearPanel
             open={toolOpen}
@@ -456,7 +474,6 @@ export default function AokanbanApp() {
             message={nearMessage}
             onApply={applyNear}
             onClear={clearNear}
-            onCopyLink={copyNearLink}
             onClose={() => setToolOpen(false)}
           />
           {pickMode && <div className="zoom-hint">地図をタップして中心を指定してください</div>}

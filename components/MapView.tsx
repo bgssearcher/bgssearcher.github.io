@@ -25,10 +25,12 @@ interface Props {
   onPick: (lat: number, lng: number) => void;
   onToggleTool: () => void;               // 半径ボタンが押されたとき
   toolActive: boolean;                    // 半径パネルを開いているか（ボタンの色用）
+  onCopyLink: () => void;                 // 条件のリンクをコピーするボタンが押されたとき
+  linkReady: boolean;                     // コピーできる条件があるか（ボタンの濃さ用）
   target: MapTarget | null;               // 指定の場所へ地図を動かす（共有リンク・ランダム用）
 }
 
-export default function MapView({ data, cells, selection, sidebarOpen, onMarkerClick, onViewChange, fitNonce, target, near, nearNonce, pickMode, onPick, onToggleTool, toolActive }: Props) {
+export default function MapView({ data, cells, selection, sidebarOpen, onMarkerClick, onViewChange, fitNonce, target, near, nearNonce, pickMode, onPick, onToggleTool, toolActive, onCopyLink, linkReady }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletTypes.Map | null>(null);
   const clusterRef = useRef<any>(null);
@@ -58,6 +60,8 @@ export default function MapView({ data, cells, selection, sidebarOpen, onMarkerC
   onPickRef.current = onPick;
   const onToggleToolRef = useRef(onToggleTool);
   onToggleToolRef.current = onToggleTool;
+  const onCopyLinkRef = useRef(onCopyLink);
+  onCopyLinkRef.current = onCopyLink;
 
   // ---- 1. 地図を作る（ブラウザでだけ実行される） ----
   useEffect(() => {
@@ -160,6 +164,24 @@ export default function MapView({ data, cells, selection, sidebarOpen, onMarkerC
         return div;
       };
       nearControl.addTo(map);
+
+      // ---- 条件のリンクをコピーするボタン（半径検索ボタンの下） ----
+      const linkControl = new L.Control({ position: 'topright' });
+      linkControl.onAdd = () => {
+        const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+        div.innerHTML =
+          '<a class="link-button" role="button" title="いまの検索条件のリンクをコピー" aria-label="いまの検索条件のリンクをコピー">' +
+          '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#333333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+          '<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>' +
+          '<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a>';
+        L.DomEvent.disableClickPropagation(div);
+        div.addEventListener('click', (e) => {
+          e.preventDefault();
+          onCopyLinkRef.current();
+        });
+        return div;
+      };
+      linkControl.addTo(map);
 
       // ---- 地図の中心の十字（「地図の中心」を指定するときの目印） ----
       const cross = L.DomUtil.create('div', 'map-crosshair', map.getContainer());
@@ -332,6 +354,12 @@ export default function MapView({ data, cells, selection, sidebarOpen, onMarkerC
   useEffect(() => {
     containerRef.current?.classList.toggle('pick-mode', pickMode);
   }, [ready, pickMode]);
+
+  // ---- 2g. コピーできる条件がないときは、リンクのボタンを薄くする ----
+  useEffect(() => {
+    const a = containerRef.current?.querySelector('.link-button') as HTMLElement | null;
+    if (a) a.classList.toggle('inactive', !linkReady);
+  }, [ready, linkReady]);
 
   // ---- 3. 選ばれた看板が変わったら、色を変えて、必要なら地図を動かす ----
   useEffect(() => {

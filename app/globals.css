@@ -330,3 +330,12 @@ body {
 @media screen and (max-width: 768px) {
   body .filter-chips { padding: 0 6px 6px 6px; }
 }
+
+/* ---- 条件の札の調整（四角め・高速道路案内は緑・下の余白を狭く） ---- */
+.filter-chip, .filter-chip-clear { border-radius: 4px; }
+.filter-chip.is-hwy { background: #EBFBF4; border-color: #27ae60; }
+.filter-chip.is-hwy .chip-x { color: #27ae60; }
+.filter-chips { padding-bottom: 3px; }
+@media screen and (max-width: 768px) {
+  body .filter-chips { padding-bottom: 3px; }
+}

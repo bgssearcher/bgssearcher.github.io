@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
+
 // 小さな部品をまとめたファイルです。大きくなったら1ファイル1部品に分けてもOKです。
 
 export function Header({ onRandom }: { onRandom: () => void }) {
@@ -25,7 +27,7 @@ export function Header({ onRandom }: { onRandom: () => void }) {
   );
 }
 
-// ×ボタン付きの入力欄（元の toggleClearButton / clearInput の代わり）
+// ×ボタン付きの入力欄。日本語入力の変換中の文字は、確定するまで外に伝えない
 export function ClearableInput({
   value,
   onChange,
@@ -37,17 +39,42 @@ export function ClearableInput({
   placeholder?: string;
   id?: string;
 }) {
+  const [text, setText] = useState(value);   // 入力欄に見せる文字（変換中の文字も含む）
+  const composing = useRef(false);            // いま変換中か
+
+  // 外から値が変わったとき（×で消す、URLから復元するなど）は、入力欄にも反映する
+  useEffect(() => {
+    if (!composing.current) setText(value);
+  }, [value]);
+
   return (
     <div className="input-with-clear">
       <input
         type="text"
         id={id}
-        value={value}
+        value={text}
         placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => {
+          setText(e.target.value);
+          if (!composing.current) onChange(e.target.value);
+        }}
+        onCompositionStart={() => {
+          composing.current = true;
+        }}
+        onCompositionEnd={(e) => {
+          composing.current = false;
+          onChange(e.currentTarget.value);
+        }}
       />
-      {value.length > 0 && (
-        <span className="clear-input" style={{ display: 'block' }} onClick={() => onChange('')}>
+      {text.length > 0 && (
+        <span
+          className="clear-input"
+          style={{ display: 'block' }}
+          onClick={() => {
+            setText('');
+            onChange('');
+          }}
+        >
           ×
         </span>
       )}

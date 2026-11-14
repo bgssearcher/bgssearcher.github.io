@@ -179,7 +179,7 @@ export default function Sidebar(p: Props) {
               <button
                 key={c.key}
                 type="button"
-                className="filter-chip"
+                className={'filter-chip' + (c.key === 'hwy' ? ' is-hwy' : '')}
                 aria-label={`${c.label}を解除`}
                 onClick={() => p.onAdvChange(c.remove(p.adv))}
               >
