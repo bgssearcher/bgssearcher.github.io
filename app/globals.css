@@ -350,3 +350,10 @@ body {
   body .search-container + .filter-chips { margin-top: calc(var(--chip-gap) - 4px); }
   body .filter-chips { padding-bottom: calc(var(--chip-gap) - 2px); }
 }
+
+/* ---- ピンの白い枠の太さ（大きさは MapView.tsx の MARKER_SIZE） ---- */
+.custom-square-marker { border-width: 2px; }
+
+/* ---- ピンの外線（白い枠の外側に、紺の細い線。大きさは変わらない） ---- */
+.custom-square-marker { box-shadow: 0 0 0 1px #3250a8; }
+.custom-square-marker.selected { box-shadow: 0 0 0 1px #ff850a; }

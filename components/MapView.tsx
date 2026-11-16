@@ -12,6 +12,9 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 
+// ピンの一辺の大きさ（px）。白い枠は、この内側にある（枠の太さは、CSSの .custom-square-marker の border-width）
+const MARKER_SIZE = 16;
+
 interface Props {
   data: Sign[];
   cells: ClusterCell[];                    // 地図を引いたときの「まとまり」（数字つきの丸）
@@ -79,8 +82,8 @@ export default function MapView({ data, cells, selection, sidebarOpen, onMarkerC
       const makeIcon = (selected: boolean) =>
         L.divIcon({
           className: 'custom-square-marker' + (selected ? ' selected' : ''),
-          iconSize: [12, 12],
-          iconAnchor: [6, 6],
+          iconSize: [MARKER_SIZE, MARKER_SIZE],
+          iconAnchor: [MARKER_SIZE / 2, MARKER_SIZE / 2],
         });
       iconsRef.current = { normal: makeIcon(false), selected: makeIcon(true) };
 
