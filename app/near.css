@@ -38,3 +38,8 @@
 .map-crosshair::before, .map-crosshair::after { content: ''; position: absolute; background: rgba(0, 0, 0, 0.45); }
 .map-crosshair::before { left: 50%; top: 0; width: 2px; height: 100%; margin-left: -1px; }
 .map-crosshair::after { top: 50%; left: 0; height: 2px; width: 100%; margin-top: -1px; }
+
+/* ---- 条件のリンクをコピーするボタン（半径検索ボタンの下） ---- */
+.leaflet-bar a.link-button { display: flex; align-items: center; justify-content: center; line-height: 1; cursor: pointer; background: #ffffff; }
+.leaflet-bar a.link-button.inactive { opacity: 0.45; }
+.link-button svg { display: block; pointer-events: none; }

@@ -14,7 +14,6 @@ interface Props {
   message: string;                                  // 位置情報のエラーなどの案内
   onApply: (mode: CenterMode, km: number) => void;  // この条件で表示
   onClear: () => void;                              // 半径検索を解除
-  onCopyLink: () => void;                           // 半径つきのリンクをコピー
   onClose: () => void;
 }
 
@@ -27,7 +26,7 @@ export function parseKm(text: string): number | null {
   return Math.round(v * 100) / 100;
 }
 
-export default function NearPanel({ open, near, busy, message, onApply, onClear, onCopyLink, onClose }: Props) {
+export default function NearPanel({ open, near, busy, message, onApply, onClear, onClose }: Props) {
   const [mode, setMode] = useState<CenterMode>('gps');
   const [kmText, setKmText] = useState('5');
   const [localError, setLocalError] = useState('');
@@ -103,25 +102,6 @@ export default function NearPanel({ open, near, busy, message, onApply, onClear,
         )}
       </div>
 
-      {near && (
-        <div className="near-share">
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              onCopyLink();
-            }}
-            style={{ color: '#3498db', fontWeight: 'bold', textDecoration: 'underline' }}
-          >
-            リンクをコピー
-          </a>
-          {near.source === 'gps' && (
-            <p className="near-warn">
-              このリンクには、中心の座標（約100m単位）が含まれます。現在地を中心にしたまま共有すると、おおよその居場所が相手に伝わります。
-            </p>
-          )}
-        </div>
-      )}
     </div>
   );
 }

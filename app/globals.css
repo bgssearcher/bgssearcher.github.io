@@ -302,3 +302,51 @@ body {
   padding: 8px 10px; margin-bottom: 8px; font-size: 13px; line-height: 1.6; color: #34495e;
 }
 .help-box img { display: block; max-width: 100%; height: auto; margin-top: 8px; border-radius: 4px; }
+
+/* ---- 絞り込み中の表示（詳細検索のバッジ・条件の札） ---- */
+#advancedSearchBtn.active { background: #ebf5fb; border-color: #3498db; }
+.adv-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 20px; height: 20px; padding: 0 5px; margin-left: 6px; box-sizing: border-box;
+  border-radius: 10px; background: #3498db; color: #ffffff; font-size: 12px; font-weight: bold;
+}
+.filter-chips {
+  display: flex; flex-wrap: nowrap; gap: 6px; padding: 0 12px 8px 12px; flex-shrink: 0;
+  overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; background: #ffffff;
+}
+.filter-chips::-webkit-scrollbar { display: none; }
+.filter-chip {
+  flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 8px 5px 10px; border: 1px solid #3498db; border-radius: 14px;
+  background: #ebf5fb; color: #2c3e50; font-size: 12px; font-weight: bold; line-height: 1.2; cursor: pointer;
+}
+.filter-chip .chip-text { max-width: 14em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.filter-chip .chip-x { color: #3498db; font-size: 14px; line-height: 1; }
+.filter-chip-clear {
+  flex-shrink: 0; padding: 5px 10px; border: 1px solid #bdc3c7; border-radius: 14px;
+  background: #ffffff; color: #555555; font-size: 12px; line-height: 1.2; cursor: pointer;
+}
+.filter-chip-clear:hover { background: #eef2f5; }
+@media screen and (max-width: 768px) {
+  body .filter-chips { padding: 0 6px 6px 6px; }
+}
+
+/* ---- 条件の札の調整（四角め・高速道路案内は緑・下の余白を狭く） ---- */
+.filter-chip, .filter-chip-clear { border-radius: 4px; }
+.filter-chip.is-hwy { background: #EBFBF4; border-color: #27ae60; }
+.filter-chip.is-hwy .chip-x { color: #27ae60; }
+.filter-chips { padding-bottom: 3px; }
+@media screen and (max-width: 768px) {
+  body .filter-chips { padding-bottom: 3px; }
+}
+
+/* ---- 検索ボックス・条件の札・件数の、上下の余白をそろえる ---- */
+:root { --chip-gap: 6px; }
+/* 検索ボックスの下の余白（PCは9px、スマホは4px）を、--chip-gap に合わせる */
+.search-container + .filter-chips { margin-top: calc(var(--chip-gap) - 9px); }
+/* 件数の文字は、上に約2pxの空きがあるので、その分を引く */
+.filter-chips { padding-top: 0; padding-bottom: calc(var(--chip-gap) - 2px); }
+@media screen and (max-width: 768px) {
+  body .search-container + .filter-chips { margin-top: calc(var(--chip-gap) - 4px); }
+  body .filter-chips { padding-bottom: calc(var(--chip-gap) - 2px); }
+}

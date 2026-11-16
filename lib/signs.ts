@@ -1,5 +1,6 @@
 import { NEAR_MAX_KM, NEAR_MIN_KM } from './constants';
 import { roundCoord } from './geo';
+import type { ViewInfo } from './geo';
 import type { AdvFilters, NearSpec } from './types';
 
 export const EMPTY_ADV: AdvFilters = {
@@ -28,7 +29,22 @@ export function hasFilter(q: string, adv: AdvFilters): boolean {
 }
 
 // ---------- URLパラメータ（?q=…&pref=…&id=…） ----------
+// ?view=緯度,経度,ズーム  ->  地図の位置
+export interface ViewSpec {
+  lat: number;
+  lng: number;
+  zoom: number;
+}
+
+// 地図の表示範囲から、中心とズームを求める（緯度は、地図の縦の伸び方に合わせて計算する）
+export function viewSpecFrom(v: ViewInfo): ViewSpec {
+  const y = (lat: number) => Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360));
+  const lat = ((2 * Math.atan(Math.exp((y(v.south) + y(v.north)) / 2)) - Math.PI / 2) * 180) / Math.PI;
+  return { lat, lng: (v.west + v.east) / 2, zoom: v.zoom };
+}
+
 export interface UrlState {
+  view: ViewSpec | null;
   q: string;
   adv: AdvFilters;
   id: string | null;
@@ -45,6 +61,16 @@ function parseNear(v: string | null): NearSpec | null {
   return { lat: roundCoord(lat), lng: roundCoord(lng), km, source: 'link' };
 }
 
+// ?view=緯度,経度,ズーム  ->  地図の位置（正しくなければ null）
+function parseView(v: string | null): ViewSpec | null {
+  if (!v) return null;
+  const [lat, lng, zoom] = v.split(',').map(Number);
+  if (![lat, lng, zoom].every(Number.isFinite)) return null;
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+  if (zoom < 0 || zoom > 18) return null;
+  return { lat: roundCoord(lat), lng: roundCoord(lng), zoom: Math.round(zoom) };
+}
+
 export function parseUrl(search: string): UrlState {
   const p = new URLSearchParams(search);
   const list = (key: string) => (p.get(key) ? p.get(key)!.split(',') : []);
@@ -52,6 +78,7 @@ export function parseUrl(search: string): UrlState {
     q: p.get('q') ?? '',
     id: p.get('id'),
     near: parseNear(p.get('near')),
+    view: parseView(p.get('view')),
     adv: {
       prefs: list('pref'),
       roadType: p.get('type') ?? '',
@@ -65,7 +92,7 @@ export function parseUrl(search: string): UrlState {
   };
 }
 
-export function buildQueryString(q: string, adv: AdvFilters, keepId: string | null, near: NearSpec | null = null): string {
+export function buildQueryString(q: string, adv: AdvFilters, keepId: string | null, near: NearSpec | null = null, view: ViewSpec | null = null): string {
   const p = new URLSearchParams();
   if (keepId) p.set('id', keepId);
   if (q.trim()) p.set('q', q.trim());
@@ -78,5 +105,6 @@ export function buildQueryString(q: string, adv: AdvFilters, keepId: string | nu
   if (adv.feats.length > 0) p.set('feat', adv.feats.join(','));
   if (adv.mode === 'OR') p.set('mode', 'OR');
   if (near) p.set('near', [roundCoord(near.lat), roundCoord(near.lng), near.km].join(','));
+  if (view) p.set('view', [roundCoord(view.lat), roundCoord(view.lng), Math.round(view.zoom)].join(','));
   return p.toString();
 }
