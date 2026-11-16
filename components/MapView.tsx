@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type * as LeafletTypes from 'leaflet';
 import { INITIAL_CENTER, MIN_FETCH_ZOOM } from '../lib/constants';
+import { parseUrl } from '../lib/signs';
 import type { ViewInfo } from '../lib/geo';
 import type { ClusterCell, MapTarget, NearSpec, Selection, Sign } from '../lib/types';
 
@@ -66,6 +67,7 @@ export default function MapView({ data, cells, selection, sidebarOpen, onMarkerC
   // ---- 1. 地図を作る（ブラウザでだけ実行される） ----
   useEffect(() => {
     let cancelled = false;
+    const initialView = parseUrl(window.location.search).view; // アドレスの地図の位置（先に読んでおく）
 
     (async () => {
       // Leaflet は window を使うので、サーバー側で読み込まれないよう useEffect の中で import する
@@ -83,8 +85,8 @@ export default function MapView({ data, cells, selection, sidebarOpen, onMarkerC
       iconsRef.current = { normal: makeIcon(false), selected: makeIcon(true) };
 
       const map = L.map(containerRef.current, { touchZoom: true, zoomControl: false }).setView(
-        INITIAL_CENTER,
-        MIN_FETCH_ZOOM,
+        initialView ? ([initialView.lat, initialView.lng] as [number, number]) : INITIAL_CENTER,
+        initialView ? initialView.zoom : MIN_FETCH_ZOOM,
       );
       L.control.zoom({ position: 'topright' }).addTo(map);
       const isMobile = window.innerWidth <= 768;

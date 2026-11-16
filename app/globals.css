@@ -339,3 +339,14 @@ body {
 @media screen and (max-width: 768px) {
   body .filter-chips { padding-bottom: 3px; }
 }
+
+/* ---- 検索ボックス・条件の札・件数の、上下の余白をそろえる ---- */
+:root { --chip-gap: 6px; }
+/* 検索ボックスの下の余白（PCは9px、スマホは4px）を、--chip-gap に合わせる */
+.search-container + .filter-chips { margin-top: calc(var(--chip-gap) - 9px); }
+/* 件数の文字は、上に約2pxの空きがあるので、その分を引く */
+.filter-chips { padding-top: 0; padding-bottom: calc(var(--chip-gap) - 2px); }
+@media screen and (max-width: 768px) {
+  body .search-container + .filter-chips { margin-top: calc(var(--chip-gap) - 4px); }
+  body .filter-chips { padding-bottom: calc(var(--chip-gap) - 2px); }
+}
