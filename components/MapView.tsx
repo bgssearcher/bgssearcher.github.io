@@ -312,20 +312,30 @@ export default function MapView({ data, cells, selection, sidebarOpen, onMarkerC
     if (!ready || !L || !layer) return;
     layer.clearLayers();
     if (!near) return;
+    const C = '#0096d6'; // 円の色（地図の、オレンジ・茶・緑・黄と見分けやすい青）
+    // 白い縁取り（どんな背景でも円の線が見えるように、下に太めの白い線を敷く）
     L.circle([near.lat, near.lng], {
       radius: near.km * 1000,
-      color: '#e67e22',
-      weight: 2,
-      dashArray: '6 6',
-      fillColor: '#e67e22',
-      fillOpacity: 0.06,
+      color: '#ffffff',
+      weight: 6,
+      opacity: 0.85,
+      fill: false,
+      interactive: false,
+    }).addTo(layer);
+    L.circle([near.lat, near.lng], {
+      radius: near.km * 1000,
+      color: C,
+      weight: 3,
+      dashArray: '8 6',
+      fillColor: C,
+      fillOpacity: 0.07,
       interactive: false,
     }).addTo(layer);
     L.circleMarker([near.lat, near.lng], {
-      radius: 5,
+      radius: 6,
       color: '#ffffff',
       weight: 2,
-      fillColor: '#e67e22',
+      fillColor: C,
       fillOpacity: 1,
       interactive: false,
     }).addTo(layer);
