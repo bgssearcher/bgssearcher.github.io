@@ -39,6 +39,20 @@ create table if not exists public.signs (
 create index if not exists signs_sort_idx on public.signs (sort_order);        -- 並び順で取り出す
 create index if not exists signs_lat_lng_idx on public.signs (lat, lng);       -- 地図の範囲で探す
 
+-- ---------- PostGIS（半径検索で使う。部品は extensions という場所に入る） ----------
+create extension if not exists postgis with schema extensions;
+
+-- 緯度・経度から、PostGIS の「点」を、自動で作る列（経度が先、緯度が後）。
+-- lat / lng が、これまでどおり元のデータで、GAS は何も変えなくてよい
+alter table public.signs
+  add column if not exists geog extensions.geography(Point, 4326)
+  generated always as (
+    extensions.st_setsrid(extensions.st_makepoint(lng, lat), 4326)::extensions.geography
+  ) stored;
+
+-- 空間用の索引
+create index if not exists signs_geog_idx on public.signs using gist (geog);
+
 -- ---------- 誰でも「読む」ことだけできるようにする（書き込みは GAS の強いキーだけ） ----------
 alter table public.signs enable row level security;
 
@@ -74,7 +88,7 @@ grant execute on function public.signs_clusters(double precision, double precisi
 -- 反映を促す
 notify pgrst, 'reload schema';
 
--- ---------- 半径検索（中心から○km以内の看板と、中心までの距離を返す） ----------
+-- ---------- 半径検索（中心から○km以内の看板と、中心までの距離を返す。PostGIS 版） ----------
 create or replace function public.signs_nearby(
   p_lat double precision,   -- 中心の緯度
   p_lng double precision,   -- 中心の経度
@@ -88,23 +102,15 @@ returns table (
 )
 language sql
 stable
+set search_path = public, extensions
 as $$
-  select t.*
-  from (
-    select
-      s.code, s.img_code, s.road_name, s.road_type, s.nickname, s.address,
-      s.prefecture, s.features, s.lat, s.lng,
-      s.place_n, s.road_n, s.address_n, s.cross_n, s.highway_n,
-      6371.0088 * 2 * asin(sqrt(least(1.0,
-        power(sin(radians(s.lat - p_lat) / 2), 2)
-        + cos(radians(p_lat)) * cos(radians(s.lat)) * power(sin(radians(s.lng - p_lng) / 2), 2)
-      ))) as dist_km
-    from public.signs s
-    where s.lat between p_lat - p_km / 111.0 and p_lat + p_km / 111.0
-      and s.lng between p_lng - p_km / (111.0 * greatest(cos(radians(p_lat)), 0.01))
-                    and p_lng + p_km / (111.0 * greatest(cos(radians(p_lat)), 0.01))
-  ) t
-  where t.dist_km <= p_km
+  select
+    s.code, s.img_code, s.road_name, s.road_type, s.nickname, s.address,
+    s.prefecture, s.features, s.lat, s.lng,
+    s.place_n, s.road_n, s.address_n, s.cross_n, s.highway_n,
+    st_distance(s.geog, st_setsrid(st_makepoint(p_lng, p_lat), 4326)::geography) / 1000.0 as dist_km
+  from public.signs s
+  where st_dwithin(s.geog, st_setsrid(st_makepoint(p_lng, p_lat), 4326)::geography, p_km * 1000.0)
 $$;
 
 grant execute on function public.signs_nearby(double precision, double precision, double precision)
