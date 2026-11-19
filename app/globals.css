@@ -53,7 +53,7 @@ body {
   display: flex; justify-content: flex-start; align-items: center; gap: 10px;
 }
 .search-container input[type="text"] {
-  flex: 1; min-width: 0; padding: 10px; font-size: 16px; border-radius: 8px; box-sizing: border-box;
+  flex: 1; min-width: 0; padding: 10px; font-size: 16px; border-radius: 4px; box-sizing: border-box;
   border: 2px solid #ddd; background: #ffffff;
 }
 .search-container input[type="text"]:focus {
@@ -63,7 +63,7 @@ body {
 
 #advancedSearchBtn {
   flex-shrink: 0; background: #eef2f5; border: 2px solid #bdc3c7; color: #2c3e50;
-  border-radius: 8px; padding: 10px; font-size: 16px;
+  border-radius: 4px; padding: 10px; font-size: 16px;
   box-sizing: border-box; cursor: pointer; white-space: nowrap;
   transition: background 0.2s;
 }
@@ -79,18 +79,18 @@ body {
   padding: 0 12px 12px 12px; box-sizing: border-box;
 }
 .data-card { 
-  display: flex; border-radius: 8px; overflow: hidden; 
+  display: flex; border-radius: 4px; overflow: hidden; 
   border: 1px solid #eef2f5; cursor: pointer; height: auto; 
   box-sizing: border-box; flex-shrink: 0; background: #ffffff;
 }
-.card-img { width: 100px; height: 100px; object-fit: cover; background: #eee; flex-shrink: 0; }
+.card-img { width: 100px; height: 100px; object-fit: cover; background: #ffffff; flex-shrink: 0; }
 .card-info { padding: 10px; display: flex; flex-direction: column; justify-content: center; gap: 4px; flex-grow: 1; overflow: hidden; }
 .data-card.active .card-info { justify-content: flex-start; }
 .card-name { font-size: 14px; font-weight: bold; margin: 0; color: #333333; }
 .card-address { font-size: 12px; margin: 0; color: #666666; }
 .card-detail { font-size: 12px; margin: 4px 0 0 0; padding-top: 4px; display: none; padding-right: 5px; word-break: break-all; color: #555555; border-top: 1px solid #ddd; }
 .data-card.active .card-detail { display: block; }
-.no-data { text-align: center; padding: 40px; border-radius: 8px; font-size: 14px; width: 100%; box-sizing: border-box; background: #ffffff; color: #666666; }
+.no-data { text-align: center; padding: 40px; border-radius: 4px; font-size: 14px; width: 100%; box-sizing: border-box; background: #ffffff; color: #666666; }
 .data-card.highlight { background: #fff9e6; border: 1px solid #ff9f1c; }
 
 .sidebar-toggle {
@@ -115,11 +115,11 @@ body {
 .modal-overlay.show { display: flex; }
 .modal-content {
   background: #fff; width: 100%; max-width: 900px;
-  max-height: 94dvh; border-radius: 12px; display: flex;
+  max-height: 94dvh; border-radius: 4px; display: flex;
   flex-direction: column; overflow: hidden;
 }
 .modal-header {
-  padding: 15px 20px; border-bottom: 1px solid #ddd;
+  padding: 15px 20px;
   display: flex; justify-content: space-between; align-items: center;
   background: #ffffff; flex-shrink: 0;
 }
@@ -127,13 +127,13 @@ body {
 .modal-body { padding: 20px 10px 20px 20px; overflow: hidden; flex: 1; display: flex; flex-direction: column; min-height: 0; }
 .modal-body-container { display: flex; gap: 20px; height: 100%; overflow: hidden; width: 100%; min-height: 0; }
 .modal-col-left, .modal-col-right { flex: 1; overflow-y: auto; padding-right: 10px; -webkit-overflow-scrolling: touch; }
-.modal-col-right { border-left: 1px solid #f0f0f0; padding-left: 10px; }
+.modal-col-right { border-left: 1px solid #ffffff; padding-left: 10px; }
 
 .form-group { margin-bottom: 15px; }
 .form-group label { display: block; font-weight: bold; font-size: 14px; margin-bottom: 5px; color: #34495e; }
 .form-row-2col { display: flex; gap: 15px; }
 .form-row-2col .form-group { flex: 1; }
-.modal-body input[type="text"], .modal-body select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 15px; background-color: #ffffff; }
+.modal-body input[type="text"], .modal-body select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-size: 15px; background-color: #ffffff; }
 .modal-body input[type="text"]:focus, 
 .modal-body select:focus { outline: none; border-color: #3498db; }
 
@@ -142,11 +142,11 @@ body {
 .feature-card { cursor: pointer; display: block; position: relative; }
 .feature-card input[type="checkbox"] { position: absolute; top: 0; left: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; z-index: 10; margin: 0; }
 .card-content {
-  border: 2px solid #ddd; border-radius: 8px; padding: 10px 5px; text-align: center;
+  border: 2px solid #ddd; border-radius: 4px; padding: 10px 5px; text-align: center;
   transition: all 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; box-sizing: border-box; background: #ffffff;
 }
 .card-content img { width: 100%; height: 50px; object-fit: contain; margin-bottom: 5px; }
-.card-content span { font-size: 12px; font-weight: bold; color: #2c3e50; margin-top: auto; }
+.card-content span { font-size: 12px; color: #2c3e50; margin-top: auto; }
 .feature-card input[type="checkbox"]:checked + .card-content { border-color: #3498db; background: #ebf5fb; color: #3498db; }
 .card-content.is-active { border-color: #3498db; background: #ebf5fb; color: #3498db; }
 .input-with-clear { position: relative; display: flex; align-items: center; width: 100%; }
@@ -159,13 +159,13 @@ body {
   display: flex; justify-content: space-between; align-items: center; gap: 10px;
 }
 .clear-btn {
-  background: #bdc3c7; color: #2c3e50; border: none; padding: 12px 20px; font-size: 16px; font-weight: bold;
-  border-radius: 8px; cursor: pointer; flex: 1; transition: background 0.2s; white-space: nowrap;
+  background: #bdc3c7; color: #2c3e50; border: none; padding: 12px 20px; font-size: 16px; font-weight: normal;
+  border-radius: 4px; cursor: pointer; flex: 1; transition: background 0.2s; white-space: nowrap;
 }
 .clear-btn:hover { background: #b2bec3; }
 .apply-btn {
   background: #3498db; color: white; border: none; padding: 12px 30px; font-size: 16px; font-weight: bold;
-  border-radius: 8px; cursor: pointer; flex: 1; transition: background 0.2s; white-space: nowrap;
+  border-radius: 4px; cursor: pointer; flex: 1; transition: background 0.2s; white-space: nowrap;
 }
 .apply-btn:hover { background: #2980b9; }
 
@@ -177,7 +177,7 @@ body {
                    max-width: 1200px; margin: 0 auto; width: 100%; }
 .header-title { font-size: 22px; font-weight: bold; margin: 0; letter-spacing: 1px; }
 .header-nav { display: flex; gap: 20px; }
-.header-nav a { color: white; text-decoration: none; font-size: 14px; font-weight: bold; transition: opacity 0.2s; }
+.header-nav a { color: white; text-decoration: none; font-size: 14px; transition: opacity 0.2s; }
 .header-nav a:hover { opacity: 0.7; } 
 .custom-square-marker { background-color: #3250a8; border: 1px solid #ffffff; border-radius: 0; box-sizing: border-box; }
 .custom-square-marker.selected { background-color: #ff850a !important; z-index: 1000 !important; }
@@ -189,7 +189,7 @@ body {
 .local-reset-btn:hover { background: #e0e0e0; }
 .pref-dropdown-trigger { width: 100%; min-height: 38px; padding: 6px 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 15px; background-color: #ffffff;
                         display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-.pref-dropdown-panel { display: none; position: absolute; top: 100%; left: 0; width: 320px; max-width: 90vw; background: #fff; border: 1px solid #ddd; border-radius: 6px;
+.pref-dropdown-panel { display: none; position: absolute; top: 100%; left: 0; width: 320px; max-width: 90vw; background: #fff; border: 1px solid #ddd; border-radius: 4px;
                       box-shadow: none; z-index: 999; padding: 15px; box-sizing: border-box; max-height: 300px; overflow-y: auto; margin-top: 5px; }
 .pref-dropdown-panel.show { display: block; }
 .region-buttons { display: grid; grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); gap: 6px; }
@@ -199,7 +199,7 @@ body {
 .pref-checkbox-label { display: flex; align-items: center; gap: 5px; font-size: 14px; cursor: pointer; }
 .pref-checkbox-label input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
 .toast-notification { position: fixed; bottom: 20px; left: 20px; background: rgba(17, 17, 17, 0.9); color: #ffffff;
-                     padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: bold; z-index: 10000;
+                     padding: 10px 16px; border-radius: 4px; font-size: 13px; z-index: 10000;
                      opacity: 0; visibility: hidden; transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
                      transform: translateY(10px); pointer-events: none; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25); }
 .toast-notification.show { opacity: 1; visibility: visible; transform: translateY(0); }
@@ -242,14 +242,11 @@ body {
   body .modal-footer label { font-size: 14px !important; white-space: nowrap; }
   body .modal-footer > div:last-child { gap: 15px; }
   body .clear-btn, body .apply-btn { flex: 1; padding: 12px 0; font-size: 15px; text-align: center; }
+  body .search-container > div { min-width: 0; }
+  body .search-container .input-with-clear { height: 100%; }
   input[type="text"],select { font-size: 16px !important; }
 }
 
-/* スマホ: 検索ボックスの高さを詳細検索ボタンに合わせる */
-@media screen and (max-width: 768px) {
-  body .search-container > div { min-width: 0; }
-  body .search-container .input-with-clear { height: 100%; }
-}
 
 /* 閉じているときは、カードに触れても反応しないようにする */
 .sidebar-wrapper.closed .sidebar-main { pointer-events: none; }
@@ -260,11 +257,11 @@ body {
 /* 地図を拡大するまでデータを取得しないので、その案内 */
 .zoom-hint {
   position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 20;
-  background: rgba(17, 17, 17, 0.75); color: #ffffff; padding: 8px 16px; border-radius: 20px;
+  background: rgba(17, 17, 17, 0.75); color: #ffffff; padding: 8px 16px; border-radius: 4px;
   font-size: 13px; pointer-events: none; white-space: nowrap;
 }
 
-/* ---- 現在地・サイドバーのアイコンを SVG 画像に差し替え ---- */
+/* 現在地・サイドバーのアイコンを SVG 画像に差し替え */
 .leaflet-bar a.locate-button { display: flex; align-items: center; justify-content: center; line-height: 1; }
 .locate-icon { width: 18px; height: 18px; display: block; pointer-events: none; user-select: none; }
 
@@ -279,13 +276,13 @@ body {
   .sidebar-toggle #toggleIcon.is-closed { transform: rotate(var(--toggle-rot)) scaleX(-1); }
 }
 
-/* ---- つまみの大きさ（細く、少し長く） ---- */
+/* つまみの大きさ */
 .sidebar-toggle { width: 20px; height: 84px; right: -20px; }
 @media screen and (max-width: 768px) {
   .sidebar-toggle { width: 72px; height: 24px; top: -24px; right: auto; }
 }
 
-/* ---- 詳細検索のヘルプ（Material Symbols の info） ---- */
+/* 詳細検索のヘルプ */
 .label-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
 .form-group .label-row label { margin-bottom: 0; }
 .help-btn {
@@ -298,17 +295,16 @@ body {
 .help-btn::after { content: ''; position: absolute; inset: -8px; }
 .help-btn[aria-expanded="true"] { background: #ecf0f1; }
 .help-box {
-  background: #f4f6f7; border: 1px solid #dfe4e6; border-radius: 6px;
-  padding: 8px 10px; margin-bottom: 8px; font-size: 13px; line-height: 1.6; color: #34495e;
+  background: #ffffff; padding: 8px 10px; margin-bottom: 8px; font-size: 13px; line-height: 1.6; color: #34495e;
 }
 .help-box img { display: block; max-width: 100%; height: auto; margin-top: 8px; border-radius: 4px; }
 
-/* ---- 絞り込み中の表示（詳細検索のバッジ・条件の札） ---- */
+/* 絞り込み中の表示（チップ） */
 #advancedSearchBtn.active { background: #ebf5fb; border-color: #3498db; }
 .adv-badge {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 20px; height: 20px; padding: 0 5px; margin-left: 6px; box-sizing: border-box;
-  border-radius: 10px; background: #3498db; color: #ffffff; font-size: 12px; font-weight: bold;
+  border-radius: 4px; background: #3498db; color: #ffffff; font-size: 12px;
 }
 .filter-chips {
   display: flex; flex-wrap: nowrap; gap: 6px; padding: 0 12px 8px 12px; flex-shrink: 0;
@@ -317,13 +313,13 @@ body {
 .filter-chips::-webkit-scrollbar { display: none; }
 .filter-chip {
   flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px;
-  padding: 5px 8px 5px 10px; border: 1px solid #3498db; border-radius: 14px;
-  background: #ebf5fb; color: #2c3e50; font-size: 12px; font-weight: bold; line-height: 1.2; cursor: pointer;
+  padding: 5px 8px 5px 10px; border: 1px solid #3498db; border-radius: 4px;
+  background: #ebf5fb; color: #2c3e50; font-size: 12px; line-height: 1.2; cursor: pointer;
 }
 .filter-chip .chip-text { max-width: 14em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .filter-chip .chip-x { color: #3498db; font-size: 14px; line-height: 1; }
 .filter-chip-clear {
-  flex-shrink: 0; padding: 5px 10px; border: 1px solid #bdc3c7; border-radius: 14px;
+  flex-shrink: 0; padding: 5px 10px; border: 1px solid #bdc3c7; border-radius: 4px;
   background: #ffffff; color: #555555; font-size: 12px; line-height: 1.2; cursor: pointer;
 }
 .filter-chip-clear:hover { background: #eef2f5; }
@@ -331,16 +327,16 @@ body {
   body .filter-chips { padding: 0 6px 6px 6px; }
 }
 
-/* ---- 条件の札の調整（四角め・高速道路案内は緑・下の余白を狭く） ---- */
+/* チップの調整 */
 .filter-chip, .filter-chip-clear { border-radius: 4px; }
-.filter-chip.is-hwy { background: #EBFBF4; border-color: #27ae60; }
+.filter-chip.is-hwy { background: #ebfbf4; border-color: #27ae60; }
 .filter-chip.is-hwy .chip-x { color: #27ae60; }
 .filter-chips { padding-bottom: 3px; }
 @media screen and (max-width: 768px) {
   body .filter-chips { padding-bottom: 3px; }
 }
 
-/* ---- 検索ボックス・条件の札・件数の、上下の余白をそろえる ---- */
+/* 検索ボックス・条件の札・件数の、上下の余白をそろえる */
 :root { --chip-gap: 6px; }
 /* 検索ボックスの下の余白（PCは9px、スマホは4px）を、--chip-gap に合わせる */
 .search-container + .filter-chips { margin-top: calc(var(--chip-gap) - 9px); }
@@ -351,9 +347,17 @@ body {
   body .filter-chips { padding-bottom: calc(var(--chip-gap) - 2px); }
 }
 
-/* ---- ピンの白い枠の太さ（大きさは MapView.tsx の MARKER_SIZE） ---- */
+/* ピンの白い枠の太さ（大きさは MapView.tsx の MARKER_SIZE） */
 .custom-square-marker { border-width: 2px; }
 
-/* ---- ピンの外線（白い枠の外側に、紺の細い線。大きさは変わらない） ---- */
+/* ピンの外線（白い枠の外側に、紺の細い線。大きさは変わらない） */
 .custom-square-marker { box-shadow: 0 0 0 1px #3250a8; }
 .custom-square-marker.selected { box-shadow: 0 0 0 1px #ff850a; }
+
+/* フォント（Noto Sans JP。読み込み前や、読み込めないときは、端末の日本語フォントになる） */
+:root { --font-ui: 'Noto Sans JP', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', Meiryo, sans-serif; }
+html, body { font-family: var(--font-ui); }
+/* ボタンや入力欄は、そのままだと標準のフォントになるので、引き継がせる */
+button, input, select, textarea { font-family: inherit; }
+/* 地図の文字（縮尺、著作権表示など）も、同じフォントにする */
+.leaflet-container { font-family: inherit; }
