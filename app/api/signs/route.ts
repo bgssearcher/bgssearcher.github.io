@@ -1,5 +1,5 @@
-// 青看板データを Supabase から取り出して返す「窓口」。
-// ブラウザは Supabase に直接つながず、ここを経由します（キーを隠せる・Cloudflare にキャッシュできる）。
+// データを Supabase から取り出して返す
+// ブラウザは Supabase に直接つながず、ここを経由（キーを隠せる・Cloudflare にキャッシュできる）。
 //
 //   /api/signs?kind=area&s=南&w=西&n=北&e=東   … 地図の範囲にある看板（軽い項目だけ）
 //   /api/signs?kind=search&q=…&pref=…           … 条件に合う看板（全国から・軽い項目だけ）
@@ -93,7 +93,7 @@ async function sbRpcQuery(
 }
 
 // ---------- Cloudflare のキャッシュ ----------
-// 独自ドメイン（aokanban.com）でだけ効きます。ローカルや workers.dev の試験版では毎回 Supabase に取りに行きます。
+// 独自ドメイン（aokanban.com）でだけ効く。ローカルや workers.dev の試験版では毎回 Supabase に取りに行く
 async function cachedJson(origin: string, key: string, produce: () => Promise<unknown>) {
   const cache: Cache | undefined = typeof caches !== 'undefined' ? (caches as any).default : undefined;
   const cacheReq = new Request(`${origin}/__cache/${encodeURIComponent(key)}`);

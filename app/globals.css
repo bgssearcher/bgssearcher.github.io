@@ -83,7 +83,7 @@ body {
   border: 1px solid #eef2f5; cursor: pointer; height: auto; 
   box-sizing: border-box; flex-shrink: 0; background: #ffffff;
 }
-.card-img { width: 100px; height: 100px; object-fit: cover; background: #eee; flex-shrink: 0; }
+.card-img { width: 100px; height: 100px; object-fit: cover; background: #ffffff; flex-shrink: 0; }
 .card-info { padding: 10px; display: flex; flex-direction: column; justify-content: center; gap: 4px; flex-grow: 1; overflow: hidden; }
 .data-card.active .card-info { justify-content: flex-start; }
 .card-name { font-size: 14px; font-weight: bold; margin: 0; color: #333333; }
@@ -199,7 +199,7 @@ body {
 .pref-checkbox-label { display: flex; align-items: center; gap: 5px; font-size: 14px; cursor: pointer; }
 .pref-checkbox-label input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
 .toast-notification { position: fixed; bottom: 20px; left: 20px; background: rgba(17, 17, 17, 0.9); color: #ffffff;
-                     padding: 10px 16px; border-radius: 8px; font-size: 13px; z-index: 10000;
+                     padding: 10px 16px; border-radius: 4px; font-size: 13px; z-index: 10000;
                      opacity: 0; visibility: hidden; transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
                      transform: translateY(10px); pointer-events: none; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25); }
 .toast-notification.show { opacity: 1; visibility: visible; transform: translateY(0); }
@@ -261,7 +261,7 @@ body {
   font-size: 13px; pointer-events: none; white-space: nowrap;
 }
 
-/* ---- 現在地・サイドバーのアイコンを SVG 画像に差し替え ---- */
+/* 現在地・サイドバーのアイコンを SVG 画像に差し替え */
 .leaflet-bar a.locate-button { display: flex; align-items: center; justify-content: center; line-height: 1; }
 .locate-icon { width: 18px; height: 18px; display: block; pointer-events: none; user-select: none; }
 
@@ -276,13 +276,13 @@ body {
   .sidebar-toggle #toggleIcon.is-closed { transform: rotate(var(--toggle-rot)) scaleX(-1); }
 }
 
-/* ---- つまみの大きさ（細く、少し長く） ---- */
+/* つまみの大きさ */
 .sidebar-toggle { width: 20px; height: 84px; right: -20px; }
 @media screen and (max-width: 768px) {
   .sidebar-toggle { width: 72px; height: 24px; top: -24px; right: auto; }
 }
 
-/* ---- 詳細検索のヘルプ（Material Symbols の info） ---- */
+/* 詳細検索のヘルプ */
 .label-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
 .form-group .label-row label { margin-bottom: 0; }
 .help-btn {
@@ -299,7 +299,7 @@ body {
 }
 .help-box img { display: block; max-width: 100%; height: auto; margin-top: 8px; border-radius: 4px; }
 
-/* ---- 絞り込み中の表示（詳細検索のバッジ・条件の札） ---- */
+/* 絞り込み中の表示（チップ） */
 #advancedSearchBtn.active { background: #ebf5fb; border-color: #3498db; }
 .adv-badge {
   display: inline-flex; align-items: center; justify-content: center;
@@ -327,7 +327,7 @@ body {
   body .filter-chips { padding: 0 6px 6px 6px; }
 }
 
-/* ---- 条件の札の調整 ---- */
+/* チップの調整 */
 .filter-chip, .filter-chip-clear { border-radius: 4px; }
 .filter-chip.is-hwy { background: #ebfbf4; border-color: #27ae60; }
 .filter-chip.is-hwy .chip-x { color: #27ae60; }
@@ -336,7 +336,7 @@ body {
   body .filter-chips { padding-bottom: 3px; }
 }
 
-/* ---- 検索ボックス・条件の札・件数の、上下の余白をそろえる ---- */
+/* 検索ボックス・条件の札・件数の、上下の余白をそろえる */
 :root { --chip-gap: 6px; }
 /* 検索ボックスの下の余白（PCは9px、スマホは4px）を、--chip-gap に合わせる */
 .search-container + .filter-chips { margin-top: calc(var(--chip-gap) - 9px); }
@@ -347,9 +347,17 @@ body {
   body .filter-chips { padding-bottom: calc(var(--chip-gap) - 2px); }
 }
 
-/* ---- ピンの白い枠の太さ（大きさは MapView.tsx の MARKER_SIZE） ---- */
+/* ピンの白い枠の太さ（大きさは MapView.tsx の MARKER_SIZE） */
 .custom-square-marker { border-width: 2px; }
 
-/* ---- ピンの外線（白い枠の外側に、紺の細い線。大きさは変わらない） ---- */
+/* ピンの外線（白い枠の外側に、紺の細い線。大きさは変わらない） */
 .custom-square-marker { box-shadow: 0 0 0 1px #3250a8; }
 .custom-square-marker.selected { box-shadow: 0 0 0 1px #ff850a; }
+
+/* フォント（Noto Sans JP。読み込み前や、読み込めないときは、端末の日本語フォントになる） */
+:root { --font-ui: 'Noto Sans JP', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', Meiryo, sans-serif; }
+html, body { font-family: var(--font-ui); }
+/* ボタンや入力欄は、そのままだと標準のフォントになるので、引き継がせる */
+button, input, select, textarea { font-family: inherit; }
+/* 地図の文字（縮尺、著作権表示など）も、同じフォントにする */
+.leaflet-container { font-family: inherit; }
