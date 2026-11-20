@@ -130,7 +130,7 @@ body {
 .modal-col-right { border-left: 1px solid #ffffff; padding-left: 10px; }
 
 .form-group { margin-bottom: 15px; }
-.form-group label { display: block; font-weight: bold; font-size: 14px; margin-bottom: 5px; color: #34495e; }
+.form-group label { display: block; font-size: 14px; margin-bottom: 5px; color: #34495e; }
 .form-row-2col { display: flex; gap: 15px; }
 .form-row-2col .form-group { flex: 1; }
 .modal-body input[type="text"], .modal-body select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-size: 15px; background-color: #ffffff; }
@@ -354,8 +354,8 @@ body {
 .custom-square-marker { box-shadow: 0 0 0 1px #3250a8; }
 .custom-square-marker.selected { box-shadow: 0 0 0 1px #ff850a; }
 
-/* フォント（Noto Sans JP。読み込み前や、読み込めないときは、端末の日本語フォントになる） */
-:root { --font-ui: 'Noto Sans JP', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', Meiryo, sans-serif; }
+/* フォント（端末のシステムフォント。日本語はヒラギノ角ゴなどになる） */
+:root { --font-ui: system-ui, -apple-system, 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', Meiryo, sans-serif; }
 html, body { font-family: var(--font-ui); }
 /* ボタンや入力欄は、そのままだと標準のフォントになるので、引き継がせる */
 button, input, select, textarea { font-family: inherit; }
