@@ -19,8 +19,7 @@ export function Header({ onRandom }: { onRandom: () => void }) {
           >
             ランダム表示
           </a>
-          {/* about.html は public/ に置いたままなので普通のリンクにしています */}
-          <a href="/about.html">about</a>
+          <a href="/about">about</a>
         </nav>
       </div>
     </header>
