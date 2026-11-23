@@ -145,6 +145,15 @@ export async function GET(request: Request) {
         return await handleNear(url);
       case 'cluster':
         return await handleCluster(url);
+      case 'ping': {
+        const ms: number[] = [];
+        for (let i = 0; i < 3; i++) {
+          const t = Date.now();
+          await sbGet(new URLSearchParams({ select: 'code', limit: '1' }));
+          ms.push(Date.now() - t);
+        }
+        return json({ ms, colo: (request as any).cf?.colo ?? null }, { cache: false });
+      }  
       case 'meta':
         return json({ total: await getTotal(url.origin) });
       default:
